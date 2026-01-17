@@ -1,29 +1,37 @@
 FROM python:3.11-slim
 
-# Install Chrome and dependencies
-RUN apt-get update && apt-get install -y \
-    wget \
-    gnupg \
-    curl \
-    unzip \
+# Install Chrome and chromedriver for amd64
+RUN if [ "$(dpkg --print-architecture)" = "amd64" ]; then \
+    apt-get update && apt-get install -y \
+        wget \
+        gnupg \
+        curl \
+        unzip \
     && wget -q -O /tmp/google-chrome-key.pub https://dl-ssl.google.com/linux/linux_signing_key.pub \
     && gpg --dearmor -o /usr/share/keyrings/google-chrome-keyring.gpg /tmp/google-chrome-key.pub \
     && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
     && apt-get update \
     && apt-get install -y google-chrome-stable \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/google-chrome-key.pub
-
-# Install matching ChromeDriver
-RUN CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | cut -d '.' -f 1) \
-    && wget -q "https://storage.googleapis.com/chrome-for-testing-public/${CHROME_VERSION}.0.6778.87/linux64/chromedriver-linux64.zip" -O /tmp/chromedriver.zip 2>/dev/null \
-    || wget -q "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_${CHROME_VERSION}" -O /tmp/version.txt \
+    && CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | cut -d '.' -f 1) \
+    && wget -q "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_${CHROME_VERSION}" -O /tmp/version.txt \
     && DRIVER_VERSION=$(cat /tmp/version.txt) \
     && wget -q "https://storage.googleapis.com/chrome-for-testing-public/${DRIVER_VERSION}/linux64/chromedriver-linux64.zip" -O /tmp/chromedriver.zip \
     && unzip -q /tmp/chromedriver.zip -d /tmp/ \
     && mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver \
     && chmod +x /usr/local/bin/chromedriver \
-    && rm -rf /tmp/chromedriver* /tmp/version.txt
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/chromedriver* /tmp/version.txt /tmp/google-chrome-key.pub; \
+    fi
+
+# Install Chromium and chromium-driver for arm64
+RUN if [ "$(dpkg --print-architecture)" = "arm64" ]; then \
+    apt-get update && apt-get install -y \
+        chromium \
+        chromium-driver \
+    && ln -s /usr/bin/chromedriver /usr/local/bin/chromedriver \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*; \
+    fi
 
 # Set working directory
 WORKDIR /app
@@ -39,7 +47,6 @@ COPY entrypoint.sh .
 
 # Make scripts executable
 RUN chmod +x entrypoint.sh ryde_mqtt_publisher.py
-
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1

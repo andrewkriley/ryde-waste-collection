@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 """
-Ryde Council Waste Collection Schedule Scraper
-Fetches waste collection dates for a given address
+Ryde Council Waste Collection Scraper
+Fetches waste collection dates from the Ryde Council website
 """
+
 import sys
-import time
 import re
-import json
+import time
+import argparse
+import os
+from datetime import datetime
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-# from webdriver_manager.chrome import ChromeDriverManager
 
 def get_waste_collection_info(address, debug=False):
     """
@@ -34,7 +36,19 @@ def get_waste_collection_info(address, debug=False):
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--window-size=1920,1080')
     
-    service = Service("/usr/local/bin/chromedriver")
+    # Detect if using Chrome or Chromium based on what's installed
+    if os.path.exists('/usr/bin/google-chrome'):
+        # amd64: Use Chrome with chromedriver
+        chrome_options.binary_location = '/usr/bin/google-chrome'
+        service = Service("/usr/local/bin/chromedriver")
+    elif os.path.exists('/usr/bin/chromium'):
+        # arm64: Use Chromium with chromium-driver
+        chrome_options.binary_location = '/usr/bin/chromium'
+        service = Service("/usr/bin/chromedriver")
+    else:
+        # Fallback: try default Chrome
+        service = Service("/usr/local/bin/chromedriver")
+    
     driver = webdriver.Chrome(service=service, options=chrome_options)
     
     try:
@@ -48,166 +62,144 @@ def get_waste_collection_info(address, debug=False):
         
         # Find the address input field
         print(f"Searching for address: {address}")
-        try:
-            address_input = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.ID, "txtAddressPublic-My-Area"))
-            )
-            print("Found address input field")
-        except:
-            print("ERROR: Could not find address input field")
-            return None
+        address_input = driver.find_element(By.ID, "txtAddressPublic-My-Area")
+        print("Found address input field")
         
-        # Make sure the field is visible
-        driver.execute_script("arguments[0].scrollIntoView(true);", address_input)
-        time.sleep(1)
-        
-        # Clear and enter the address
+        # Enter the address
         address_input.clear()
         address_input.send_keys(address)
         print("Address entered, waiting for autocomplete...")
-        
-        # Wait for Google Places autocomplete to appear
         time.sleep(3)
         
-        # Try to select from autocomplete dropdown
+        # Try to click on first autocomplete suggestion
         try:
-            # Look for the pac-container (Google Places autocomplete dropdown)
             autocomplete_items = driver.find_elements(By.CSS_SELECTOR, ".pac-item")
+            print(f"Found {len(autocomplete_items)} autocomplete suggestions")
+            
             if autocomplete_items:
-                print(f"Found {len(autocomplete_items)} autocomplete suggestions")
-                # Click the first item
                 autocomplete_items[0].click()
                 print("Clicked first autocomplete suggestion")
+                time.sleep(2)
             else:
+                # No autocomplete suggestions, try pressing Enter
                 print("No autocomplete items found, pressing Enter")
                 address_input.send_keys(Keys.RETURN)
-        except:
-            print("Fallback: pressing Enter")
-            address_input.send_keys(Keys.RETURN)
+                time.sleep(2)
+        except Exception as e:
+            print(f"Could not interact with autocomplete: {e}")
+            print("Attempting to click search button instead")
         
-        time.sleep(2)
-        
-        # Click the search button
+        # Try to click the search button
         try:
             search_button = driver.find_element(By.NAME, "btnSearch_Public-My-Area")
-            driver.execute_script("arguments[0].scrollIntoView(true);", search_button)
-            time.sleep(0.5)
             search_button.click()
             print("Clicked search button")
         except Exception as e:
             print(f"Could not click search button: {e}")
-            # Try alternative - submit the form or press Enter
-            try:
-                address_input.send_keys(Keys.RETURN)
-            except:
-                pass
         
         # Wait for results to load
         print("Waiting for results...")
-        time.sleep(8)
+        time.sleep(5)
         
         if debug:
             with open('/tmp/ryde_result.html', 'w') as f:
                 f.write(driver.page_source)
             print("Page source saved to /tmp/ryde_result.html")
         
-        # Extract waste collection information
+        # Get the page source and extract waste collection dates
         page_source = driver.page_source
-        
-        # Look for waste collection data
-        results = {}
-        waste_types = ['General Waste', 'Garden Organics', 'Recycling']
         
         print("\nExtracting waste collection dates...")
         
-        for waste_type in waste_types:
-            # Search for the waste type and nearby date
-            # Pattern allows for HTML tags between waste type and date
-            pattern = re.compile(
-                rf'{re.escape(waste_type)}.*?(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+(\d{{1,2}}/\d{{1,2}}/\d{{4}})',
-                re.IGNORECASE | re.DOTALL
-            )
-            match = pattern.search(page_source)
+        # Pattern to match dates in format like "Wed 21/1/2026"
+        date_pattern = r'(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+(\d{1,2}/\d{1,2}/\d{4})'
+        
+        # Look for waste collection types and their dates
+        waste_types = {
+            'General Waste': None,
+            'Garden Organics': None,
+            'Recycling': None
+        }
+        
+        for waste_type in waste_types.keys():
+            # Find the waste type in the page
+            type_pattern = re.compile(f'{waste_type}.*?{date_pattern}', re.IGNORECASE | re.DOTALL)
+            match = type_pattern.search(page_source)
             
             if match:
-                day_of_week = match.group(1)
+                day = match.group(1)
                 date = match.group(2)
-                full_date = f"{day_of_week} {date}"
-                results[waste_type] = full_date
+                full_date = f"{day} {date}"
+                waste_types[waste_type] = full_date
                 print(f"  {waste_type}: {full_date}")
         
-        if not results:
-            print("\nNo waste collection dates found.")
-            print("This could mean:")
-            print("  - The address wasn't recognized")
-            print("  - The page structure has changed")
-            print("  - The address is outside the Ryde area")
-            
-            if not debug:
-                print("\nRun with --debug flag to save page source for inspection")
-            
-            return None
+        # Check if we found all waste types
+        found_count = sum(1 for v in waste_types.values() if v is not None)
+        print(f"\nFound {found_count}/{len(waste_types)} waste collection schedules")
         
-        print(f"\nFound {len(results)}/{len(waste_types)} waste collection schedules")
-        return results
+        if found_count > 0:
+            return waste_types
+        else:
+            print("\n⚠️  Could not find waste collection dates")
+            if not debug:
+                print("Run with --debug flag to save page source for inspection")
+            return None
             
     except Exception as e:
-        print(f"ERROR: {e}")
+        print(f"\n❌ Error: {e}")
         import traceback
         traceback.print_exc()
         return None
     finally:
         driver.quit()
 
+def format_output(waste_data, json_format=False):
+    """Format the waste collection data for display"""
+    if json_format:
+        import json
+        return json.dumps(waste_data, indent=2)
+    else:
+        output = []
+        for waste_type, date in waste_data.items():
+            if date:
+                output.append(f"{waste_type}: {date}")
+            else:
+                output.append(f"{waste_type}: Not found")
+        return "\n".join(output)
+
 def main():
-    import argparse
-    
     parser = argparse.ArgumentParser(
         description='Fetch waste collection dates from Ryde Council website'
     )
     parser.add_argument(
         'address',
-        nargs='?',
-        default='YOUR_ADDRESS',
-        help='Address to search for (default: "YOUR_ADDRESS")'
+        help='Address to search for (e.g., "54 North Road Ryde")'
+    )
+    parser.add_argument(
+        '--json',
+        action='store_true',
+        help='Output results in JSON format'
     )
     parser.add_argument(
         '--debug',
         action='store_true',
         help='Save page source for debugging'
     )
-    parser.add_argument(
-        '--json',
-        action='store_true',
-        help='Output results as JSON'
-    )
     
     args = parser.parse_args()
     
-    try:
-        from bs4 import BeautifulSoup
-    except ImportError:
-        print("Installing beautifulsoup4...")
-        import subprocess
-        subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'beautifulsoup4', '--quiet'])
+    print(f"Fetching waste collection dates for: {args.address}")
+    print("=" * 60)
     
     results = get_waste_collection_info(args.address, debug=args.debug)
     
     if results:
-        print("\n" + "="*60)
-        print("WASTE COLLECTION SCHEDULE")
-        print("="*60)
-        
-        if args.json:
-            print(json.dumps(results, indent=2))
-        else:
-            for waste_type, date in results.items():
-                print(f"{waste_type}: {date}")
-        
-        print("="*60)
+        print("\n" + "=" * 60)
+        print(format_output(results, args.json))
+        print("=" * 60)
         return 0
     else:
         return 1
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())
