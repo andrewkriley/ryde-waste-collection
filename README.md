@@ -4,6 +4,8 @@
 
 Automated waste collection date scraper for Ryde Council (NSW, Australia) with Home Assistant integration via MQTT and beautiful Mushroom card dashboard.
 
+![Ryde Waste Collection Dashboard](ryde-waste-collection-homeassistant.png)
+
 ![Home Assistant Dashboard](https://img.shields.io/badge/Home%20Assistant-Integration-blue)
 ![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue)
 ![Docker](https://img.shields.io/badge/Docker-Required-blue)

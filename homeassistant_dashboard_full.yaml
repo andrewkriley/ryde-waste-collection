@@ -1,0 +1,121 @@
+# Complete Dashboard Configuration for Home Assistant
+# Go to Settings → Dashboards → Add Dashboard → Copy this entire file
+
+views:
+  - title: Waste Collection
+    path: waste-collection
+    icon: mdi:trash-can
+    cards:
+      - type: vertical-stack
+        cards:
+          # Title Card
+          - type: custom:mushroom-title-card
+            title: Waste Collection
+            subtitle: Ryde Council - Next Collections
+
+          # General Waste Card
+          - type: custom:mushroom-template-card
+            primary: General Waste
+            secondary: >-
+              {% if states('sensor.ryde_waste_collection_general_waste_collection') != 'unknown' %}
+                {{ states('sensor.ryde_waste_collection_general_waste_collection') }}
+                {% if state_attr('sensor.ryde_waste_collection_general_waste_collection', 'days_until') is not none %}
+                  ({{ state_attr('sensor.ryde_waste_collection_general_waste_collection', 'days_until') }} days)
+                {% endif %}
+              {% else %}
+                No data available
+              {% endif %}
+            icon: mdi:trash-can
+            icon_color: >-
+              {% if state_attr('sensor.ryde_waste_collection_general_waste_collection', 'upcoming') == true %}
+                red
+              {% else %}
+                grey
+              {% endif %}
+            badge_icon: >-
+              {% if state_attr('sensor.ryde_waste_collection_general_waste_collection', 'upcoming') == true %}
+                mdi:bell-ring
+              {% endif %}
+            badge_color: red
+            tap_action:
+              action: more-info
+            entity: sensor.ryde_waste_collection_general_waste_collection
+
+          # Recycling Card
+          - type: custom:mushroom-template-card
+            primary: Recycling
+            secondary: >-
+              {% if states('sensor.ryde_waste_collection_recycling_collection') != 'unknown' %}
+                {{ states('sensor.ryde_waste_collection_recycling_collection') }}
+                {% if state_attr('sensor.ryde_waste_collection_recycling_collection', 'days_until') is not none %}
+                  ({{ state_attr('sensor.ryde_waste_collection_recycling_collection', 'days_until') }} days)
+                {% endif %}
+              {% else %}
+                No data available
+              {% endif %}
+            icon: mdi:recycle
+            icon_color: >-
+              {% if state_attr('sensor.ryde_waste_collection_recycling_collection', 'upcoming') == true %}
+                yellow
+              {% else %}
+                grey
+              {% endif %}
+            badge_icon: >-
+              {% if state_attr('sensor.ryde_waste_collection_recycling_collection', 'upcoming') == true %}
+                mdi:bell-ring
+              {% endif %}
+            badge_color: yellow
+            tap_action:
+              action: more-info
+            entity: sensor.ryde_waste_collection_recycling_collection
+
+          # Garden Organics Card
+          - type: custom:mushroom-template-card
+            primary: Garden Organics
+            secondary: >-
+              {% if states('sensor.ryde_waste_collection_garden_organics_collection') != 'unknown' %}
+                {{ states('sensor.ryde_waste_collection_garden_organics_collection') }}
+                {% if state_attr('sensor.ryde_waste_collection_garden_organics_collection', 'days_until') is not none %}
+                  ({{ state_attr('sensor.ryde_waste_collection_garden_organics_collection', 'days_until') }} days)
+                {% endif %}
+              {% else %}
+                No data available
+              {% endif %}
+            icon: mdi:leaf
+            icon_color: >-
+              {% if state_attr('sensor.ryde_waste_collection_garden_organics_collection', 'upcoming') == true %}
+                green
+              {% else %}
+                grey
+              {% endif %}
+            badge_icon: >-
+              {% if state_attr('sensor.ryde_waste_collection_garden_organics_collection', 'upcoming') == true %}
+                mdi:bell-ring
+              {% endif %}
+            badge_color: green
+            tap_action:
+              action: more-info
+            entity: sensor.ryde_waste_collection_garden_organics_collection
+
+          # Next Collection Summary Card
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: template
+                icon: mdi:calendar-check
+                content: >-
+                  {% set upcoming = namespace(found=false, min_days=999, type='') %}
+                  {% for sensor in ['sensor.ryde_waste_collection_general_waste_collection', 'sensor.ryde_waste_collection_recycling_collection', 'sensor.ryde_waste_collection_garden_organics_collection'] %}
+                    {% if state_attr(sensor, 'days_until') is not none and state_attr(sensor, 'days_until') >= 0 %}
+                      {% if state_attr(sensor, 'days_until') < upcoming.min_days %}
+                        {% set upcoming.min_days = state_attr(sensor, 'days_until') %}
+                        {% set upcoming.type = state_attr(sensor, 'collection_type') %}
+                        {% set upcoming.found = true %}
+                      {% endif %}
+                    {% endif %}
+                  {% endfor %}
+                  {% if upcoming.found %}
+                    Next: {{ upcoming.type }} in {{ upcoming.min_days }} day{{ 's' if upcoming.min_days != 1 else '' }}
+                  {% else %}
+                    No upcoming collections
+                  {% endif %}
+                icon_color: blue
