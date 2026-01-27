@@ -1,9 +1,9 @@
-# Ryde Council Waste Collection - API Validation
+# Ryde Council Waste Collection - API Documentation
 
 ## Overview
-This document validates the new API-based approach to replace the current screen scraping method for retrieving waste collection schedules from Ryde Council.
+This project uses Ryde Council's public APIs to retrieve waste collection schedules. This approach replaced the previous Selenium-based screen scraping method for improved reliability and performance.
 
-## New API Endpoints
+## API Endpoints
 
 ### 1. Address Search API
 **Endpoint:** `https://www.ryde.nsw.gov.au/api/v1/myarea/search`
@@ -15,7 +15,7 @@ This document validates the new API-based approach to replace the current screen
 
 **Example Request:**
 ```
-https://www.ryde.nsw.gov.au/api/v1/myarea/search?keywords=54+North+Road%2C+Ryde
+https://www.ryde.nsw.gov.au/api/v1/myarea/search?keywords=129+Blaxland+Road%2C+Ryde
 ```
 
 **Response Format:**
@@ -23,17 +23,17 @@ https://www.ryde.nsw.gov.au/api/v1/myarea/search?keywords=54+North+Road%2C+Ryde
 {
   "Items": [
     {
-      "Id": "d681a13e-bf24-498e-b3df-f7e6796eee8f",
-      "AddressSingleLine": "54 North Road, Ryde 2112",
-      "MunicipalSubdivision": "Central Ward",
+      "Id": "b148f7d7-e435-4b28-8970-b89af8be2ba0",
+      "AddressSingleLine": "1028/109-129 Blaxland Road, Ryde 2112",
+      "MunicipalSubdivision": null,
       "Distance": 0,
-      "Score": 18.723524,
+      "Score": 15.635677,
       "LatLon": null
     }
   ],
   "Offset": 0,
   "Limit": 10,
-  "Total": 10
+  "Total": 1
 }
 ```
 
@@ -53,7 +53,7 @@ https://www.ryde.nsw.gov.au/api/v1/myarea/search?keywords=54+North+Road%2C+Ryde
 
 **Example Request:**
 ```
-https://www.ryde.nsw.gov.au/ocapi/Public/myarea/wasteservices?geolocationid=d681a13e-bf24-498e-b3df-f7e6796eee8f&ocsvclang=en-AU
+https://www.ryde.nsw.gov.au/ocapi/Public/myarea/wasteservices?geolocationid=b148f7d7-e435-4b28-8970-b89af8be2ba0&ocsvclang=en-AU
 ```
 
 **Response Format:**
@@ -67,48 +67,33 @@ https://www.ryde.nsw.gov.au/ocapi/Public/myarea/wasteservices?geolocationid=d681
 **Notes:**
 - Response contains HTML that needs to be parsed
 - HTML includes dates for General Waste, Garden Organics, and Recycling
-- Date format: "Day DD/M/YYYY" (e.g., "Wed 28/1/2026")
-
-## Validation Results
-
-### Test Address 1: 54 North Road, Ryde
-- ✅ **Address Found:** 54 North Road, Ryde 2112
-- ✅ **Geolocation ID:** d681a13e-bf24-498e-b3df-f7e6796eee8f
-- ✅ **Ward:** Central Ward
-- ✅ **Schedule Retrieved:**
-  - General Waste: Wed 28/1/2026
-  - Garden Organics: Wed 28/1/2026
-  - Recycling: Wed 4/2/2026
-
-### Test Address 2: 32 Marilyn Street, North Ryde
-- ✅ **Address Found:** 32 Marilyn Street, North Ryde 2113
-- ✅ **Geolocation ID:** 82a9e578-871b-4559-88b1-0406ae3d1089
-- ✅ **Ward:** East Ward
-- ✅ **Schedule Retrieved:**
-  - General Waste: Fri 30/1/2026
-  - Garden Organics: Fri 30/1/2026
-  - Recycling: Fri 6/2/2026
+- Date format: "Day DD/M/YYYY" (e.g., "Tue 27/1/2026")
 
 ## Advantages Over Screen Scraping
 
 1. **More Reliable:** API endpoints are less likely to break with website redesigns
 2. **Cleaner Data:** JSON response format is easier to parse than HTML
-3. **Better Performance:** Direct API calls are faster than full page scraping
-4. **Official Support:** Using public APIs that Ryde Council's website uses internally
-5. **Structured Data:** Address search returns normalized address data with geolocation IDs
+3. **Better Performance:** Direct API calls are faster than browser automation
+4. **No Browser Dependencies:** Eliminates need for Selenium and Chrome/Chromium
+5. **Official Support:** Using public APIs that Ryde Council's website uses internally
+6. **Structured Data:** Address search returns normalized address data with geolocation IDs
 
-## Implementation Notes
+## Implementation
 
 ### Python Example
-See `api_validation.py` for a complete working example that:
-- Searches for an address
-- Retrieves the geolocation ID
-- Fetches the waste collection schedule
-- Parses the HTML response to extract dates
+The `ryde_waste_scraper.py` script provides a complete implementation:
+
+```python
+from ryde_waste_scraper import get_waste_collection_info
+
+waste_info = get_waste_collection_info("129 Blaxland Road, Ryde")
+print(waste_info)
+# Output: {'General Waste': 'Tue 27/1/2026', 'Garden Organics': 'Tue 27/1/2026', 'Recycling': 'Tue 3/2/2026'}
+```
 
 ### Dependencies
 - `requests` library for HTTP requests
-- Standard library modules: `json`, `re`, `html`, `datetime`
+- Standard library modules: `json`, `re`, `html`, `sys`, `argparse`
 
 ### Parsing Logic
 The waste services API returns HTML content that must be parsed:
@@ -124,24 +109,42 @@ general_waste = re.search(
 ).group(1).strip()
 ```
 
-## Running the Validation Script
+## Command-Line Usage
+
+### Basic Usage
+```bash
+python3 ryde_waste_scraper.py "129 Blaxland Road, Ryde"
+```
+
+### JSON Output
+```bash
+python3 ryde_waste_scraper.py "129 Blaxland Road, Ryde" --json
+```
+
+## API Validation
+
+To validate the API implementation, run:
 
 ```bash
 python3 api_validation.py
 ```
 
-This will test both addresses and display detailed results.
+This tests the address search and waste schedule retrieval to ensure the APIs are working correctly.
 
-## Conclusion
+## Integration with Home Assistant
 
-✅ **API Validation: SUCCESSFUL**
+The `ryde_mqtt_publisher.py` script uses the API-based scraper to publish waste collection data to Home Assistant via MQTT Discovery. See `MQTT.md` for detailed setup instructions.
 
-Both test addresses successfully returned accurate waste collection schedules. The new API approach is validated and ready for implementation to replace the screen scraping method.
+## Error Handling
 
-## Next Steps
+The implementation includes robust error handling for:
+- Network timeouts and connection errors
+- Invalid addresses (no search results)
+- API response parsing errors
+- Missing or malformed data
 
-1. Refactor existing scraper to use the new API endpoints
-2. Update error handling for API-specific edge cases
-3. Consider caching geolocation IDs for frequently queried addresses
-4. Update tests to validate API integration
-5. Monitor API stability and response times in production
+All errors are logged to stderr for easy debugging.
+
+## Migration Notes
+
+The API-based approach maintains the same `get_waste_collection_info(address)` function interface as the previous Selenium-based scraper, ensuring backward compatibility with existing integrations like the MQTT publisher.

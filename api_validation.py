@@ -2,9 +2,9 @@
 """
 Ryde Council Waste Collection API Validation Script
 
-This script validates the new API-based approach to replace screen scraping.
+This script validates the API-based approach for retrieving waste collection schedules.
 
-New APIs:
+APIs:
 1. Address Search: https://www.ryde.nsw.gov.au/api/v1/myarea/search?keywords={address}
 2. Waste Schedule: https://www.ryde.nsw.gov.au/ocapi/Public/myarea/wasteservices?geolocationid={id}&ocsvclang=en-AU
 """
@@ -32,7 +32,7 @@ def search_address(address):
         return {
             "id": first_result["Id"],
             "address": first_result["AddressSingleLine"],
-            "ward": first_result["MunicipalSubdivision"],
+            "ward": first_result.get("MunicipalSubdivision"),
             "score": first_result["Score"]
         }
     
@@ -94,7 +94,8 @@ def validate_address(address):
     
     print(f"   ✓ Found: {result['address']}")
     print(f"   ✓ ID: {result['id']}")
-    print(f"   ✓ Ward: {result['ward']}")
+    if result['ward']:
+        print(f"   ✓ Ward: {result['ward']}")
     print(f"   ✓ Match Score: {result['score']:.2f}")
     
     # Step 2: Get waste schedule
@@ -117,34 +118,25 @@ def main():
     print("Ryde Council Waste Collection API Validation")
     print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
-    # Test addresses
-    test_addresses = [
-        "54 North Road, Ryde",
-        "32 Marilyn Street, North Ryde"
-    ]
+    # Test address
+    test_address = "129 Blaxland Road, Ryde"
     
-    results = []
-    for address in test_addresses:
-        success = validate_address(address)
-        results.append((address, success))
+    success = validate_address(test_address)
     
     # Summary
     print(f"\n{'='*60}")
     print("VALIDATION SUMMARY")
     print(f"{'='*60}")
     
-    for address, success in results:
-        status = "✓ PASS" if success else "❌ FAIL"
-        print(f"{status}: {address}")
+    status = "✓ PASS" if success else "❌ FAIL"
+    print(f"{status}: {test_address}")
     
-    all_passed = all(success for _, success in results)
-    
-    if all_passed:
-        print(f"\n✅ All tests passed! API approach is validated.")
+    if success:
+        print(f"\n✅ API validation passed!")
     else:
-        print(f"\n⚠️  Some tests failed. Review output above.")
+        print(f"\n⚠️  API validation failed. Review output above.")
     
-    return 0 if all_passed else 1
+    return 0 if success else 1
 
 
 if __name__ == "__main__":
