@@ -1,0 +1,32 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Ryde Waste Collection",
+        "description": "Enter your Ryde Council address to track waste collection schedules.",
+        "data": {
+          "address": "Address"
+        }
+      }
+    },
+    "error": {
+      "address_not_found": "Address not found in Ryde Council's system. Please check the address and try again.",
+      "cannot_connect": "Failed to connect to Ryde Council API. Please try again later.",
+      "unknown": "An unexpected error occurred."
+    },
+    "abort": {
+      "already_configured": "This address is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Ryde Waste Collection Options",
+        "description": "Configure update interval for waste collection data.",
+        "data": {
+          "scan_interval": "Update interval (hours)"
+        }
+      }
+    }
+  }
+}

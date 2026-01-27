@@ -1,4 +1,18 @@
-# Ryde Council Waste Collection Integration
+# Ryde Waste Collection - Home Assistant
+
+> **🎉 NEW: Native Home Assistant Integration Available!**  
+> This project now supports two installation methods:
+> - **[Native Integration](INSTALLATION.md#option-1-native-home-assistant-integration-recommended)** (Recommended) - Easy setup, runs in HA, no Docker/MQTT needed
+> - **[Docker with MQTT](INSTALLATION.md#option-2-docker-with-mqtt)** - For advanced users
+>
+> 📖 See the **[Installation Guide](INSTALLATION.md)** for details on both methods.
+
+---
+
+# Docker/MQTT Installation (Original Method)
+
+This document covers the Docker/MQTT installation method. For the simpler native integration, see [INSTALLATION.md](INSTALLATION.md).
+
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
