@@ -19,6 +19,8 @@ This complete dashboard configuration uses Mushroom cards with dynamic colors. I
 
 ### Complete Dashboard YAML
 
+**Copy this entire configuration:**
+
 ```yaml
 title: Waste Collection
 views:
@@ -35,20 +37,10 @@ views:
             entity: sensor.ryde_waste_collection_general_waste
             name: General Waste
             icon: mdi:trash-can
-            icon_color: |-
-              {% set days = state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') | int(-1) %}
-              {% if days >= 0 and days <= 7 %}
-                red
-              {% else %}
-                grey
-              {% endif %}
+            icon_color: "{{ 'red' if (state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') | int(-1)) in range(0, 8) else 'grey' }}"
             primary_info: name
             secondary_info: state
-            badge_icon: |-
-              {% set days = state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') | int(-1) %}
-              {% if days >= 0 and days <= 1 %}
-                mdi:alert
-              {% endif %}
+            badge_icon: "{{ 'mdi:alert' if (state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') | int(-1)) in range(0, 2) else '' }}"
             badge_color: red
             tap_action:
               action: more-info
@@ -57,20 +49,10 @@ views:
             entity: sensor.ryde_waste_collection_recycling
             name: Recycling
             icon: mdi:recycle
-            icon_color: |-
-              {% set days = state_attr('sensor.ryde_waste_collection_recycling', 'days_until') | int(-1) %}
-              {% if days >= 0 and days <= 7 %}
-                yellow
-              {% else %}
-                grey
-              {% endif %}
+            icon_color: "{{ 'yellow' if (state_attr('sensor.ryde_waste_collection_recycling', 'days_until') | int(-1)) in range(0, 8) else 'grey' }}"
             primary_info: name
             secondary_info: state
-            badge_icon: |-
-              {% set days = state_attr('sensor.ryde_waste_collection_recycling', 'days_until') | int(-1) %}
-              {% if days >= 0 and days <= 1 %}
-                mdi:alert
-              {% endif %}
+            badge_icon: "{{ 'mdi:alert' if (state_attr('sensor.ryde_waste_collection_recycling', 'days_until') | int(-1)) in range(0, 2) else '' }}"
             badge_color: yellow
             tap_action:
               action: more-info
@@ -79,160 +61,107 @@ views:
             entity: sensor.ryde_waste_collection_garden_organics
             name: Garden Organics
             icon: mdi:leaf
-            icon_color: |-
-              {% set days = state_attr('sensor.ryde_waste_collection_garden_organics', 'days_until') | int(-1) %}
-              {% if days >= 0 and days <= 7 %}
-                green
-              {% else %}
-                grey
-              {% endif %}
+            icon_color: "{{ 'green' if (state_attr('sensor.ryde_waste_collection_garden_organics', 'days_until') | int(-1)) in range(0, 8) else 'grey' }}"
             primary_info: name
             secondary_info: state
-            badge_icon: |-
-              {% set days = state_attr('sensor.ryde_waste_collection_garden_organics', 'days_until') | int(-1) %}
-              {% if days >= 0 and days <= 1 %}
-                mdi:alert
-              {% endif %}
+            badge_icon: "{{ 'mdi:alert' if (state_attr('sensor.ryde_waste_collection_garden_organics', 'days_until') | int(-1)) in range(0, 2) else '' }}"
             badge_color: green
             tap_action:
               action: more-info
 ```
 
-### Key Template Syntax
+### Key Points
 
-The critical part is using the `| int(-1)` filter:
-
-```jinja2
-{% set days = state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') | int(-1) %}
-{% if days >= 0 and days <= 7 %}
-  red
-{% else %}
-  grey
-{% endif %}
+**The critical syntax for icon_color:**
+```yaml
+icon_color: "{{ 'red' if (state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') | int(-1)) in range(0, 8) else 'grey' }}"
 ```
 
-This:
-- Converts `days_until` to an integer
-- Uses `-1` as default if the attribute is missing or None
-- Checks if days is between 0 and 7 (inclusive)
+**Why this works:**
+- Single-line template (no extra whitespace)
+- Uses `in range(0, 8)` which means 0-7 (range is exclusive at the end)
+- `| int(-1)` converts to integer with -1 default (which is not in range 0-8)
+- Quoted string for proper YAML parsing
 
 ---
 
 ## Troubleshooting
 
-### Step 1: Verify Your Sensors
+### If Icons Are Still Grey
 
-Go to **Developer Tools** → **States** and find your sensors:
-- `sensor.ryde_waste_collection_general_waste`
-- `sensor.ryde_waste_collection_recycling`
-- `sensor.ryde_waste_collection_garden_organics`
-
-Check that each sensor has a `days_until` attribute with a number value (e.g., 0, 3, 7).
-
-### Step 2: Test the Template
-
-Go to **Developer Tools** → **Template** and paste:
+**1. Test the template in Developer Tools → Template:**
 
 ```jinja2
 {% set days = state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') | int(-1) %}
-Days until: {{ days }}
-Days >= 0: {{ days >= 0 }}
-Days <= 7: {{ days <= 7 }}
-Should be colored: {{ days >= 0 and days <= 7 }}
-Result: {{ 'red' if (days >= 0 and days <= 7) else 'grey' }}
+Days: {{ days }}
+In range: {{ days in range(0, 8) }}
+Color: {{ 'red' if days in range(0, 8) else 'grey' }}
 ```
 
-Expected output when `days_until = 0`:
-```
-Days until: 0
-Days >= 0: True
-Days <= 7: True
-Should be colored: True
-Result: red
-```
+**2. Check the exact output:**
+- Should show `Color: red` when days is 0-7
+- Should show `Color: grey` when days is 8+ or -1
 
-### Step 3: Try Alternative Templates
+**3. Verify sensor state:**
+- Go to Developer Tools → States
+- Find `sensor.ryde_waste_collection_general_waste`
+- Confirm `days_until` attribute exists and is a number
 
-If the main template still doesn't work, try these alternatives:
+**4. Try the alternative syntax with >-:**
 
-**Option A: One-liner with range**
 ```yaml
 icon_color: >-
   {{ 'red' if (state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') | int(-1)) in range(0, 8) else 'grey' }}
 ```
 
-**Option B: Using default filter**
+**5. Make sure you're editing the right dashboard:**
+- Save your changes
+- Hard refresh browser (Ctrl+Shift+R or Cmd+Shift+R)
+- Check you're viewing the correct dashboard tab
+
+### Common Mistakes
+
+❌ **Wrong - Has whitespace issues:**
 ```yaml
-icon_color: >-
-  {{ 'red' if (state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') | default(999) | int) <= 7 else 'grey' }}
+icon_color: |-
+  {% set days = ... %}
+  {% if days >= 0 %}
+    red
+  {% endif %}
 ```
 
-### Step 4: Clear Cache and Restart
-
-1. **Clear browser cache**: Ctrl+Shift+R (or Cmd+Shift+R on Mac)
-2. **Restart Home Assistant**: Settings → System → Restart
-3. **Update Mushroom**: HACS → Frontend → Mushroom → Update if available
-
-### Step 5: Check Mushroom Installation
-
-Make sure Mushroom cards are properly installed:
-1. Go to **HACS** → **Frontend**
-2. Find **Mushroom** in your installed integrations
-3. If not installed, click **Explore & Download Repositories**, search for **Mushroom**, and install
-
----
-
-## Common Issues
-
-### Icons Always Grey
-
-**Cause**: The template isn't evaluating correctly or `days_until` is missing.
-
-**Fix**: Use the `| int(-1)` filter version shown above. This is the most reliable.
-
-### Icons Show Wrong Color
-
-**Cause**: You may have copied the template incorrectly or there are extra spaces.
-
-**Fix**: Copy the exact YAML from above, ensuring proper indentation.
-
-### Sensors Don't Exist
-
-**Cause**: Integration not configured or sensors failed to load.
-
-**Fix**: 
-1. Go to Settings → Devices & Services
-2. Find "Ryde Waste Collection"
-3. Click Configure and verify your address
-4. Restart Home Assistant
+✅ **Correct - Single line, no whitespace:**
+```yaml
+icon_color: "{{ 'red' if (state_attr('sensor...', 'days_until') | int(-1)) in range(0, 8) else 'grey' }}"
+```
 
 ---
 
 ## Customizing the Threshold
 
-Change when icons become colored by adjusting the number:
+Change the range to adjust when colors appear:
 
-**3 days notice**:
+**3 days notice:**
 ```yaml
-{% if days >= 0 and days <= 3 %}
+icon_color: "{{ 'red' if (state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') | int(-1)) in range(0, 4) else 'grey' }}"
 ```
 
-**14 days notice**:
+**14 days notice:**
 ```yaml
-{% if days >= 0 and days <= 14 %}
+icon_color: "{{ 'red' if (state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') | int(-1)) in range(0, 15) else 'grey' }}"
 ```
+
+Remember: `range(0, 8)` = 0 through 7 (range end is exclusive)
 
 ---
 
-## Why Use `| int(-1)`?
+## Understanding range()
 
-The `| int(-1)` filter is crucial because:
-1. **Type safety**: Ensures the value is always an integer
-2. **None handling**: Converts None to -1 (which is < 0, so always grey)
-3. **Reliability**: Works consistently across all Home Assistant versions
-4. **Range check**: `days >= 0` ensures we ignore the -1 default
+- `range(0, 8)` includes: 0, 1, 2, 3, 4, 5, 6, 7
+- `range(0, 4)` includes: 0, 1, 2, 3
+- `range(0, 15)` includes: 0, 1, 2, 3, ..., 14
 
-This is the recommended approach for Mushroom card templates.
+The second number is **exclusive** (not included).
 
 ---
 
@@ -256,4 +185,18 @@ This is the recommended approach for Mushroom card templates.
 | Recycling | 0-7 days | `yellow` | `grey` |
 | Garden Organics | 0-7 days | `green` | `grey` |
 
-**Note**: `days_until = 0` means collection is **today** - it will show colored!
+**Alert badges** appear when collection is today (0) or tomorrow (1).
+
+---
+
+## Still Not Working?
+
+If you've tried everything above and it still doesn't work:
+
+1. **Copy the EXACT YAML** from the "Complete Dashboard YAML" section above
+2. **Create a NEW dashboard** (don't edit existing) to test
+3. **Clear browser cache** completely
+4. **Restart Home Assistant**
+5. **Check Mushroom version** - update if old
+
+The single-line template format is critical for Mushroom cards to parse the color correctly.
