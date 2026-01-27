@@ -139,3 +139,12 @@ MIT License - see [LICENSE](LICENSE) for details.
 ---
 
 **Note:** This is an unofficial integration and is not affiliated with Ryde Council.
+
+## Colored Icons
+
+Want colored icons that match the actual bin colors? See [CUSTOMIZATION.md](docs/CUSTOMIZATION.md) for:
+- 🔴 Red icons for General Waste
+- 🟡 Yellow icons for Recycling  
+- 🟢 Green icons for Garden Organics
+
+Multiple methods available: customize.yaml, Mushroom cards, button-card, and card-mod.
