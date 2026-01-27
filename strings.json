@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Ryde Waste Collection",
-        "description": "Enter your Ryde Council address to track waste collection schedules.",
+        "description": "Enter your address in the Ryde LGA to track waste collection schedules.\n\nNote: This is an unofficial integration created by Andrew Riley and is not affiliated with Ryde Council.",
         "data": {
           "address": "Address"
         }

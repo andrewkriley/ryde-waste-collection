@@ -70,8 +70,8 @@ class RydeWasteCollectionSensor(CoordinatorEntity, SensorEntity):
         self._attr_device_info = {
             "identifiers": {(DOMAIN, entry.entry_id)},
             "name": "Ryde Waste Collection",
-            "manufacturer": "Ryde Council",
-            "model": "Waste Collection Schedule",
+            "manufacturer": "Andrew Riley",
+            "model": "Waste Collection Schedule for Ryde LGA",
             "entry_type": "service",
         }
 

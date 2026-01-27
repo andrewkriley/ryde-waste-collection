@@ -1,295 +1,176 @@
-# Ryde Waste Collection - Home Assistant
+# Ryde Waste Collection - Home Assistant Custom Integration
 
-> **🎉 NEW: Native Home Assistant Integration Available!**  
-> This project now supports two installation methods:
-> - **[Native Integration](INSTALLATION.md#option-1-native-home-assistant-integration-recommended)** (Recommended) - Easy setup, runs in HA, no Docker/MQTT needed
-> - **[Docker with MQTT](INSTALLATION.md#option-2-docker-with-mqtt)** - For advanced users
->
-> 📖 See the **[Installation Guide](INSTALLATION.md)** for details on both methods.
+[![GitHub Release](https://img.shields.io/github/release/andrewkriley/ryde-waste-collection-homeassistant.svg?style=flat-square)](https://github.com/andrewkriley/ryde-waste-collection-homeassistant/releases)
+[![License](https://img.shields.io/github/license/andrewkriley/ryde-waste-collection-homeassistant.svg?style=flat-square)](LICENSE)
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=flat-square)](https://github.com/custom-components/hacs)
 
----
+**Unofficial Home Assistant integration for tracking Ryde Council waste collection schedules.**
 
-# Docker/MQTT Installation (Original Method)
-
-This document covers the Docker/MQTT installation method. For the simpler native integration, see [INSTALLATION.md](INSTALLATION.md).
-
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-Automated waste collection date scraper for Ryde Council (NSW, Australia) with Home Assistant integration via MQTT and beautiful Mushroom card dashboard.
-
-![Ryde Waste Collection Dashboard](ryde-waste-collection-homeassistant.png)
-
-![Home Assistant Dashboard](https://img.shields.io/badge/Home%20Assistant-Integration-blue)
-![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue)
-![Docker](https://img.shields.io/badge/Docker-Required-blue)
-
-## ✨ Features
-
-- 🐳 **Docker containerized** - Easy deployment and automatic updates
-- 📡 **MQTT Discovery** - Sensors auto-register in Home Assistant
-- 🎨 **Beautiful Mushroom cards** - Color-coded indicators (Red/Yellow/Green)
-- 🚦 **Smart indicators** - Light up only when collection is within 7 days
-- 🔄 **Automatic updates** - Configurable schedule (default: hourly)
-- 🔔 **Optional notifications** - Get reminded about upcoming collections
-- 🗑️ **Three waste types**:
-  - 🔴 General Waste (Red)
-  - 🟡 Recycling (Yellow)
-  - 🟢 Garden Organics (Green)
-
-## 🐳 Docker Deployment (Recommended)
-
-**Important:** MQTT authentication is required for security. See [Home Assistant MQTT Setup](docs/HOMEASSISTANT_MQTT_SETUP.md) for complete setup instructions.
-
-The easiest way to run this is with Docker:
-
-```bash
-# 1. Copy environment file
-cp .env.example .env
-
-# 2. Edit with your details
-nano .env
-
-# 3. Start the container
-docker-compose up -d
-```
-
-The container will automatically update your Home Assistant sensors every hour. See [DOCKER.md](DOCKER.md) for full documentation.
+*Created by Andrew Riley - Not affiliated with or endorsed by Ryde Council.*
 
 ---
-
-## 📋 Requirements
-
-- **Docker** and Docker Compose
-- **Home Assistant** with MQTT broker
-- **Mushroom Cards** (via HACS)
-
-## 🚀 Quick Start
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/andrewkriley/ryde-waste-collection.git
-cd ryde-waste-collection
-```
-
-### 2. Set Up MQTT in Home Assistant
-
-Follow the complete guide: [Home Assistant MQTT Setup](docs/HOMEASSISTANT_MQTT_SETUP.md)
-
-Quick steps:
-1. Install Mosquitto broker add-on
-2. Configure MQTT username/password
-3. Add MQTT integration
-4. Verify connection
-
-### 3. Configure Container
-
-Edit `.env`:
-
-```bash
-cp .env.example .env
-nano .env
-```
-
-Required settings:
-```env
-RYDE_ADDRESS="Your Street Address, Ryde"
-MQTT_BROKER="homeassistant.local"
-MQTT_USER="ryde_waste"
-MQTT_PASSWORD="your_secure_password"
-```
-
-### 4. Start Container
-
-```bash
-docker-compose up -d
-```
-
-Check logs:
-```bash
-docker-compose logs -f
-```
-
-You should see:
-```
-✓ Connected to MQTT broker
-✓ Published General Waste: Wed 21/1/2026 (in 4 days)
-✓ Published Recycling: Wed 21/1/2026 (in 4 days)
-✓ Published Garden Organics: Wed 28/1/2026 (in 11 days)
-```
-
-### 5. Verify Sensors
-
-In Home Assistant:
-- Go to **Settings** → **Devices & Services** → **MQTT**
-- Look for **"Ryde Waste Collection"** device
-- Three sensors should appear automatically
-
-### 6. Add Dashboard
-
-See [Dashboard Setup Guide](docs/DASHBOARD_SETUP.md) for complete instructions.
-
-Quick steps:
-1. Install Mushroom Cards (via HACS)
-2. Edit dashboard → Add Card → Manual
-3. Copy contents of `homeassistant_mushroom_card.yaml`
-4. Paste → Save → Done!
-
-## 📊 Home Assistant Sensors
-
-Three sensors are auto-created via MQTT Discovery:
-- `sensor.ryde_waste_general` - General Waste collection
-- `sensor.ryde_waste_recycling` - Recycling collection
-- `sensor.ryde_waste_garden` - Garden Organics collection
-
-Each sensor includes:
-- `date` - ISO formatted date (YYYY-MM-DD)
-- `date_formatted` - Human readable (e.g., "Wed 21/1/2026")
-- `days_until` - Days until collection
-- `upcoming` - Boolean (true if within 7 days)
-- `color` - Indicator color (red/yellow/green)
-- `collection_type` - Type of waste
-- `last_updated` - Last update timestamp
-
-## 🔧 Configuration Options
-
-All configuration via `.env` file:
-
-### Required
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `RYDE_ADDRESS` | Your address in Ryde LGA | `"123 Main St, Ryde NSW 2112"` |
-| `MQTT_BROKER` | MQTT broker hostname | `"homeassistant.local"` |
-| `MQTT_USER` | MQTT username | `"ryde_waste"` |
-| `MQTT_PASSWORD` | MQTT password | `"secure_password"` |
-
-### Optional
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `MQTT_PORT` | `1883` | MQTT broker port |
-| `MQTT_TOPIC_PREFIX` | `ryde_waste` | Topic prefix for sensors |
-| `UPDATE_INTERVAL` | `3600` | Update interval in seconds (1 hour) |
-| `RUN_ON_STARTUP` | `true` | Run update on container start |
-| `TZ` | `Australia/Sydney` | Timezone for logs |
-| `DEBUG` | `false` | Enable debug mode |
-
-## 📁 Project Structure
-
-```
-ryde-waste-collection/
-├── ryde_waste_scraper.py           # Core scraper
-├── ryde_mqtt_publisher.py          # MQTT publisher
-├── Dockerfile                      # Docker image
-├── docker-compose.yml              # Docker service
-├── entrypoint.sh                   # Container entrypoint
-├── requirements.txt                # Python dependencies
-├── homeassistant_mushroom_card.yaml # Dashboard card
-├── .env.example                    # Configuration template
-├── .gitignore                      # Git ignore rules
-├── .dockerignore                   # Docker ignore rules
-├── LICENSE                         # MIT License
-├── README.md                       # This file
-├── CONTRIBUTING.md                 # Contribution guidelines
-├── DOCKER.md                       # Docker deployment guide
-├── MQTT.md                         # MQTT integration guide
-└── docs/
-    ├── HOMEASSISTANT_MQTT_SETUP.md # Complete MQTT setup
-    ├── DASHBOARD_SETUP.md          # Dashboard creation
-    ├── HOMEASSISTANT_SETUP.md      # HA configuration
-    ├── VISUAL_EXAMPLE.md           # Dashboard examples
-    ├── QUICK_START.md              # Quick reference
-    └── PROJECT_STRUCTURE.md        # Project organization
-```
-
-## 🔧 Docker Commands
-
-### Start
-```bash
-docker-compose up -d
-```
-
-### View logs
-```bash
-docker-compose logs -f
-```
-
-### Restart
-```bash
-docker-compose restart
-```
-
-### Stop
-```bash
-docker-compose down
-```
-
-### Rebuild after changes
-```bash
-docker-compose up -d --build
-```
-
-## 🐛 Troubleshooting
-
-### Sensors not appearing
-
-1. Check container is running: `docker-compose ps`
-2. View logs: `docker-compose logs -f`
-3. Verify MQTT connection in logs
-4. Check MQTT integration in Home Assistant
-5. See [MQTT Setup Guide](docs/HOMEASSISTANT_MQTT_SETUP.md)
-
-### Container keeps restarting
-
-1. Check environment variables in `.env`
-2. Verify MQTT credentials are correct
-3. Ensure MQTT broker is running
-4. Check logs for error messages
-
-### Dashboard not showing data
-
-1. Verify sensors exist: Developer Tools → States
-2. Check Mushroom Cards are installed
-3. Verify card YAML syntax
-4. See [Dashboard Setup Guide](docs/DASHBOARD_SETUP.md)
-
-## 🤝 Contributing
-
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md).
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'feat: Add some AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## ⚠️ Disclaimer
 
-This is an unofficial tool and is not affiliated with or endorsed by Ryde Council. Use responsibly and respect the council's website terms of service.
+This is an **unofficial** integration created by Andrew Riley. It is **not affiliated with, endorsed by, or in any way officially connected** with the City of Ryde Council. This integration uses publicly accessible data from the Ryde Council website.
 
-## 🙏 Acknowledgments
-
-- Ryde Council for providing the waste collection service
-- Home Assistant community
-- [Mushroom Cards](https://github.com/piitaya/lovelace-mushroom) by piitaya
-
-## 📚 Documentation
-
-For detailed documentation, see:
-- [Docker Deployment Guide](DOCKER.md)
-- [MQTT Integration Guide](MQTT.md)
-- [Home Assistant MQTT Setup](docs/HOMEASSISTANT_MQTT_SETUP.md)
-- [Dashboard Setup Guide](docs/DASHBOARD_SETUP.md)
-- [Visual Examples](docs/VISUAL_EXAMPLE.md)
+- **Data Source**: Ryde Council public APIs
+- **Author**: Andrew Riley
+- **Support**: Community-driven (not official Ryde Council support)
 
 ---
 
-**Made with ❤️ for the Ryde community**
+## ✨ Features
 
-**Docker + MQTT = Simple & Reliable** 🐳📡
+- 🗑️ **Three Waste Types**: General Waste, Recycling, and Garden Organics
+- 📅 **Next Collection Dates**: Always know when to put your bins out
+- ⏰ **Days Until Collection**: Count down to collection day
+- 🎨 **Colored Icons**: Match your dashboard to bin colors (red, yellow, green)
+- ⚙️ **Easy Setup**: UI-based configuration - just enter your address
+- 🔄 **Configurable Updates**: Set your own update interval (1-24 hours)
+- 📍 **Multiple Addresses**: Add as many addresses as you need
+
+## 🚀 Quick Start
+
+### Installation
+
+#### Via HACS (Recommended)
+
+1. Open HACS in Home Assistant
+2. Click the three dots menu (top right) → Custom repositories
+3. Add: `https://github.com/andrewkriley/ryde-waste-collection-homeassistant`
+4. Category: Integration
+5. Click "Download" and restart Home Assistant
+
+#### Manual Installation
+
+```bash
+cd /path/to/homeassistant/custom_components
+git clone https://github.com/andrewkriley/ryde-waste-collection-homeassistant.git ryde_waste_collection
+```
+
+Restart Home Assistant after installation.
+
+### Configuration
+
+1. Go to **Settings** → **Devices & Services**
+2. Click **+ Add Integration**
+3. Search for **"Ryde Waste Collection"**
+4. Enter your Ryde LGA address (e.g., "129 Blaxland Road, Ryde")
+5. Click **Submit**
+
+**Note**: During setup, you'll see a disclaimer that this is an unofficial integration.
+
+## 📊 Sensor Entities
+
+The integration creates three sensors:
+
+- `sensor.ryde_waste_collection_general_waste`
+- `sensor.ryde_waste_collection_recycling`
+- `sensor.ryde_waste_collection_garden_organics`
+
+### Sensor Attributes
+
+Each sensor includes:
+- **State**: Next collection date (e.g., "Tue 27/1/2026")
+- **days_until**: Days until collection
+- **collection_date**: Full date string
+- **address**: Your normalized Ryde Council address
+- **geolocation_id**: Ryde Council geolocation ID
+- **last_updated**: Last update timestamp
+
+## 🎨 Customization
+
+### Colored Icons
+
+See [docs/CUSTOMIZATION.md](docs/CUSTOMIZATION.md) for colored icon examples:
+- 🔴 Red for General Waste
+- 🟡 Yellow for Recycling
+- 🟢 Green for Garden Organics
+
+### Dashboard Examples
+
+Check out [docs/DASHBOARD_SETUP.md](docs/DASHBOARD_SETUP.md) for:
+- Mushroom card configurations
+- Entity card examples
+- Complete dashboard layouts
+
+## 📖 Documentation
+
+- **[Installation Guide](INSTALLATION.md)** - Detailed setup instructions
+- **[Customization Guide](docs/CUSTOMIZATION.md)** - Colored icons and styling
+- **[Dashboard Setup](docs/DASHBOARD_SETUP.md)** - Card configurations
+- **[API Documentation](API_VALIDATION.md)** - Technical details
+- **[Contributing](CONTRIBUTING.md)** - How to contribute
+
+## 🐳 Docker/MQTT (Legacy)
+
+The original Docker/MQTT implementation has been archived to `archive/docker-mqtt/`.
+
+If you're currently using Docker/MQTT, the integration still works, but we recommend migrating to the native custom component for easier management.
+
+See [archive/docker-mqtt/README.md](archive/docker-mqtt/README.md) for migration instructions.
+
+## 🛠️ Development
+
+### Project Structure
+
+```
+ryde-waste-collection-homeassistant/
+├── __init__.py              # Integration entry point
+├── config_flow.py           # UI configuration
+├── coordinator.py           # Data fetching
+├── sensor.py                # Sensor entities
+├── const.py                 # Constants
+├── manifest.json            # Integration metadata
+├── strings.json             # UI strings
+├── translations/            # Translations
+├── docs/                    # Documentation
+├── archive/                 # Archived Docker/MQTT files
+└── .github/                 # GitHub workflows
+```
+
+### Running Locally
+
+1. Clone the repository
+2. Create a symbolic link in your HA custom_components:
+   ```bash
+   ln -s /path/to/ryde-waste-collection-homeassistant /path/to/homeassistant/custom_components/ryde_waste_collection
+   ```
+3. Restart Home Assistant
+4. Configure via UI
+
+## 🤝 Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## 📝 License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+## 🙏 Credits
+
+- **Author**: Andrew Riley
+- **Data Source**: Ryde Council public APIs
+- **Community**: Home Assistant community for integration frameworks
+- **Contributors**: All contributors and users
+
+## 💬 Support
+
+- 🐛 [Report an Issue](https://github.com/andrewkriley/ryde-waste-collection-homeassistant/issues)
+- 💬 [Discussions](https://github.com/andrewkriley/ryde-waste-collection-homeassistant/discussions)
+- ⭐ Star this repo if you find it useful!
+
+---
+
+## ⚠️ Important Notes
+
+- **Unofficial**: This integration is not affiliated with or endorsed by Ryde Council
+- **Data Accuracy**: While we strive for accuracy, always verify collection dates on the official Ryde Council website
+- **No Warranty**: Provided as-is with no guarantees
+- **Community Support**: Support is community-driven, not from Ryde Council
+- **API Changes**: Integration may break if Ryde Council changes their APIs
+
+---
+
+**Disclaimer**: This is an unofficial, community-created integration. It is not affiliated with, endorsed by, or in any way officially connected with the City of Ryde Council.
