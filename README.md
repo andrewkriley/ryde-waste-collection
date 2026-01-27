@@ -83,10 +83,10 @@ Each sensor includes:
 
 ### Colored Icons
 
-See [docs/CUSTOMIZATION.md](docs/CUSTOMIZATION.md) for colored icon examples:
-- 🔴 Red for General Waste
-- 🟡 Yellow for Recycling
-- 🟢 Green for Garden Organics
+See [docs/CUSTOMIZATION.md](docs/CUSTOMIZATION.md) for dynamic icon colors:
+- Icons turn color when collection is within 7 days
+- Stay grey/blue when more than 7 days away
+- Match actual bin colors: Red, Yellow, Green
 
 ### Dashboard Examples
 

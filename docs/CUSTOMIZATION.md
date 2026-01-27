@@ -1,77 +1,188 @@
 # Customization Guide
 
-## Colored Icons
+## Dynamic Icon Colors
 
-Home Assistant sensors don't support icon colors in the entity definition, but you can easily add colored icons using entity customization.
+Make your waste collection icons change color automatically as collection day approaches!
 
-### Method 1: Using customize.yaml (Recommended)
+### Overview
 
-Add this to your `configuration.yaml`:
+Icons will:
+- **Stay grey/blue** (default) when collection is more than 7 days away
+- **Turn to bin color** when collection is within 7 days
+- Match actual Ryde Council bin colors: 🔴 Red (General), 🟡 Yellow (Recycling), 🟢 Green (Garden)
+
+This helps you quickly see which bins need attention soon!
+
+---
+
+## Method 1: Mushroom Cards (Recommended)
+
+Mushroom cards are the easiest way to add dynamic colors. Install via HACS: **Frontend → Mushroom**
+
+### Individual Cards
 
 ```yaml
-homeassistant:
-  customize: !include customize.yaml
+type: custom:mushroom-entity-card
+entity: sensor.ryde_waste_collection_general_waste
+name: General Waste
+icon: mdi:trash-can
+icon_color: |-
+  {% if state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') <= 7 %}
+    red
+  {% else %}
+    grey
+  {% endif %}
+primary_info: name
+secondary_info: state
 ```
-
-Then create/edit `customize.yaml`:
 
 ```yaml
-# Ryde Waste Collection - Colored Icons
-sensor.ryde_waste_collection_general_waste:
-  icon_color: red
-  
-sensor.ryde_waste_collection_recycling:
-  icon_color: yellow
-  
-sensor.ryde_waste_collection_garden_organics:
-  icon_color: green
+type: custom:mushroom-entity-card
+entity: sensor.ryde_waste_collection_recycling
+name: Recycling
+icon: mdi:recycle
+icon_color: |-
+  {% if state_attr('sensor.ryde_waste_collection_recycling', 'days_until') <= 7 %}
+    yellow
+  {% else %}
+    grey
+  {% endif %}
+primary_info: name
+secondary_info: state
 ```
 
-### Method 2: Using Mushroom Cards
+```yaml
+type: custom:mushroom-entity-card
+entity: sensor.ryde_waste_collection_garden_organics
+name: Garden Organics
+icon: mdi:leaf
+icon_color: |-
+  {% if state_attr('sensor.ryde_waste_collection_garden_organics', 'days_until') <= 7 %}
+    green
+  {% else %}
+    grey
+  {% endif %}
+primary_info: name
+secondary_info: state
+```
 
-Mushroom cards support icon colors directly:
+### Compact Chips (Horizontal Layout)
 
 ```yaml
 type: custom:mushroom-chips-card
+alignment: center
 chips:
-  - type: entity
+  - type: template
     entity: sensor.ryde_waste_collection_general_waste
     icon: mdi:trash-can
-    icon_color: red
-    content_info: name
-    
-  - type: entity
+    icon_color: |-
+      {% if state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') <= 7 %}
+        red
+      {% else %}
+        grey
+      {% endif %}
+    content: |
+      {{ states('sensor.ryde_waste_collection_general_waste') }}
+    tap_action:
+      action: more-info
+      
+  - type: template
     entity: sensor.ryde_waste_collection_recycling
     icon: mdi:recycle
-    icon_color: yellow
-    content_info: name
-    
-  - type: entity
+    icon_color: |-
+      {% if state_attr('sensor.ryde_waste_collection_recycling', 'days_until') <= 7 %}
+        yellow
+      {% else %}
+        grey
+      {% endif %}
+    content: |
+      {{ states('sensor.ryde_waste_collection_recycling') }}
+    tap_action:
+      action: more-info
+      
+  - type: template
     entity: sensor.ryde_waste_collection_garden_organics
     icon: mdi:leaf
-    icon_color: green
-    content_info: name
+    icon_color: |-
+      {% if state_attr('sensor.ryde_waste_collection_garden_organics', 'days_until') <= 7 %}
+        green
+      {% else %}
+        grey
+      {% endif %}
+    content: |
+      {{ states('sensor.ryde_waste_collection_garden_organics') }}
+    tap_action:
+      action: more-info
 ```
 
-### Method 3: Using Custom Button Card
+---
+
+## Method 2: Custom Button Card
+
+Install via HACS: **Frontend → button-card**
 
 ```yaml
 type: custom:button-card
 entity: sensor.ryde_waste_collection_general_waste
 name: General Waste
 icon: mdi:trash-can
-color: red
 show_state: true
-state:
-  - value: ".*"
-    styles:
-      icon:
-        - color: red
+show_last_changed: true
+styles:
+  icon:
+    - color: |
+        [[[
+          const days = entity.attributes.days_until;
+          if (days <= 7) return 'red';
+          return 'var(--primary-text-color)';
+        ]]]
+  card:
+    - padding: 10px
 ```
 
-### Method 4: Using card-mod
+```yaml
+type: custom:button-card
+entity: sensor.ryde_waste_collection_recycling
+name: Recycling
+icon: mdi:recycle
+show_state: true
+show_last_changed: true
+styles:
+  icon:
+    - color: |
+        [[[
+          const days = entity.attributes.days_until;
+          if (days <= 7) return 'gold';
+          return 'var(--primary-text-color)';
+        ]]]
+  card:
+    - padding: 10px
+```
 
-If you're using regular entity cards, you can use card-mod:
+```yaml
+type: custom:button-card
+entity: sensor.ryde_waste_collection_garden_organics
+name: Garden Organics
+icon: mdi:leaf
+show_state: true
+show_last_changed: true
+styles:
+  icon:
+    - color: |
+        [[[
+          const days = entity.attributes.days_until;
+          if (days <= 7) return 'green';
+          return 'var(--primary-text-color)';
+        ]]]
+  card:
+    - padding: 10px
+```
+
+---
+
+## Method 3: Card-mod (Works with Standard Cards)
+
+Install via HACS: **Frontend → card-mod**
 
 ```yaml
 type: entities
@@ -80,135 +191,168 @@ entities:
     card_mod:
       style: |
         :host {
-          --card-mod-icon-color: red;
+          --card-mod-icon-color: 
+            {% if state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') <= 7 %}
+              red
+            {% else %}
+              var(--primary-text-color)
+            {% endif %};
         }
         
   - entity: sensor.ryde_waste_collection_recycling
     card_mod:
       style: |
         :host {
-          --card-mod-icon-color: yellow;
+          --card-mod-icon-color: 
+            {% if state_attr('sensor.ryde_waste_collection_recycling', 'days_until') <= 7 %}
+              gold
+            {% else %}
+              var(--primary-text-color)
+            {% endif %};
         }
         
   - entity: sensor.ryde_waste_collection_garden_organics
     card_mod:
       style: |
         :host {
-          --card-mod-icon-color: green;
+          --card-mod-icon-color: 
+            {% if state_attr('sensor.ryde_waste_collection_garden_organics', 'days_until') <= 7 %}
+              green
+            {% else %}
+              var(--primary-text-color)
+            {% endif %};
         }
 ```
 
+---
+
 ## Complete Dashboard Example
 
-Here's a complete example using Mushroom cards with colors:
+Here's a complete vertical stack with dynamic colors using Mushroom cards:
 
 ```yaml
 type: vertical-stack
 cards:
   - type: custom:mushroom-title-card
     title: Waste Collection
-    subtitle: Next Collection Dates
+    subtitle: Next 7 Days
     
-  - type: custom:mushroom-chips-card
-    alignment: center
-    chips:
-      - type: entity
-        entity: sensor.ryde_waste_collection_general_waste
-        icon: mdi:trash-can
-        icon_color: red
-        tap_action:
-          action: more-info
-        
-      - type: entity
-        entity: sensor.ryde_waste_collection_recycling
-        icon: mdi:recycle
-        icon_color: yellow
-        tap_action:
-          action: more-info
-        
-      - type: entity
-        entity: sensor.ryde_waste_collection_garden_organics
-        icon: mdi:leaf
-        icon_color: green
-        tap_action:
-          action: more-info
-  
   - type: custom:mushroom-entity-card
     entity: sensor.ryde_waste_collection_general_waste
     name: General Waste
     icon: mdi:trash-can
-    icon_color: red
+    icon_color: |-
+      {% if state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') <= 7 %}
+        red
+      {% else %}
+        grey
+      {% endif %}
     primary_info: name
     secondary_info: state
+    badge_icon: |-
+      {% if state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') <= 1 %}
+        mdi:alert
+      {% endif %}
     badge_color: red
-    badge_icon: mdi:calendar
+    tap_action:
+      action: more-info
     
   - type: custom:mushroom-entity-card
     entity: sensor.ryde_waste_collection_recycling
     name: Recycling
     icon: mdi:recycle
-    icon_color: yellow
+    icon_color: |-
+      {% if state_attr('sensor.ryde_waste_collection_recycling', 'days_until') <= 7 %}
+        yellow
+      {% else %}
+        grey
+      {% endif %}
     primary_info: name
     secondary_info: state
+    badge_icon: |-
+      {% if state_attr('sensor.ryde_waste_collection_recycling', 'days_until') <= 1 %}
+        mdi:alert
+      {% endif %}
     badge_color: yellow
-    badge_icon: mdi:calendar
+    tap_action:
+      action: more-info
     
   - type: custom:mushroom-entity-card
     entity: sensor.ryde_waste_collection_garden_organics
     name: Garden Organics
     icon: mdi:leaf
-    icon_color: green
+    icon_color: |-
+      {% if state_attr('sensor.ryde_waste_collection_garden_organics', 'days_until') <= 7 %}
+        green
+      {% else %}
+        grey
+      {% endif %}
     primary_info: name
     secondary_info: state
+    badge_icon: |-
+      {% if state_attr('sensor.ryde_waste_collection_garden_organics', 'days_until') <= 1 %}
+        mdi:alert
+      {% endif %}
     badge_color: green
-    badge_icon: mdi:calendar
+    tap_action:
+      action: more-info
 ```
 
-## Dynamic Icon Colors Based on Days Until Collection
+---
 
-You can also make the icon color change based on how soon the collection is:
+## Customizing the Threshold
+
+Want to change when icons become colored? Just change the `7` to any number of days:
 
 ```yaml
-type: custom:button-card
-entity: sensor.ryde_waste_collection_general_waste
-name: General Waste
-icon: mdi:trash-can
-show_state: true
-state:
-  - value: ".*"
-    operator: template
-    color: |
-      [[[
-        const days = entity.attributes.days_until;
-        if (days === 0) return 'red';
-        if (days === 1) return 'orange';
-        if (days <= 3) return 'yellow';
-        return 'green';
-      ]]]
-styles:
-  icon:
-    - color: |
-        [[[
-          const days = entity.attributes.days_until;
-          if (days === 0) return 'red';
-          if (days === 1) return 'orange';
-          if (days <= 3) return 'yellow';
-          return 'green';
-        ]]]
+{% if state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') <= 3 %}
+  red
+{% else %}
+  grey
+{% endif %}
 ```
 
-## Required Custom Cards
+Common thresholds:
+- **3 days**: Only color when very soon
+- **7 days**: Color when within a week (recommended)
+- **14 days**: Color when within two weeks
 
-Most colorization methods require custom cards. Install via HACS:
+---
 
-- **Mushroom Cards**: `HACS → Frontend → Mushroom`
-- **Button Card**: `HACS → Frontend → button-card`
-- **card-mod**: `HACS → Frontend → card-mod`
+## Color Reference
 
-## Color Recommendations
+Matching actual Ryde Council bin colors:
 
-- 🔴 **Red**: General Waste (red bin)
-- 🟡 **Yellow**: Recycling (yellow bin)
-- 🟢 **Green**: Garden Organics (green bin)
+| Waste Type | Icon Color | Default Color | Days Until |
+|------------|------------|---------------|------------|
+| General Waste | `red` | `grey` | ≤ 7 days |
+| Recycling | `yellow` | `grey` | ≤ 7 days |
+| Garden Organics | `green` | `grey` | ≤ 7 days |
 
-These colors match the actual bin colors used by Ryde Council!
+**Bonus**: Add alert badges when collection is tomorrow or today!
+
+---
+
+## Installing Required Cards
+
+All these methods require custom cards from HACS:
+
+1. Open **HACS** in Home Assistant
+2. Go to **Frontend**
+3. Search and install:
+   - **Mushroom** (easiest, recommended)
+   - **button-card** (advanced styling)
+   - **card-mod** (works with standard cards)
+4. Restart Home Assistant
+5. Add the card configurations above
+
+---
+
+## Why Dynamic Colors?
+
+- **At a glance**: Quickly see which bins are due soon
+- **Less clutter**: Icons only stand out when relevant
+- **Smart reminders**: Visual cue without notifications
+- **Customizable**: Adjust the threshold to your preference
+
+The icons will automatically update as collection day approaches!
