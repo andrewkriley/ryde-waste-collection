@@ -133,7 +133,6 @@ This tests the address search and waste schedule retrieval to ensure the APIs ar
 
 ## Integration with Home Assistant
 
-The `ryde_mqtt_publisher.py` script uses the API-based scraper to publish waste collection data to Home Assistant via MQTT Discovery. See `MQTT.md` for detailed setup instructions.
 
 ## Error Handling
 
@@ -147,4 +146,4 @@ All errors are logged to stderr for easy debugging.
 
 ## Migration Notes
 
-The API-based approach maintains the same `get_waste_collection_info(address)` function interface as the previous Selenium-based scraper, ensuring backward compatibility with existing integrations like the MQTT publisher.
+The API-based approach maintains the same `get_waste_collection_info(address)` function interface as the previous Selenium-based scraper.

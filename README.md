@@ -103,14 +103,6 @@ Check out [docs/DASHBOARD_SETUP.md](docs/DASHBOARD_SETUP.md) for:
 - **[API Documentation](docs/API_VALIDATION.md)** - Technical details
 - **[Contributing](CONTRIBUTING.md)** - How to contribute
 
-## 🐳 Docker/MQTT (Legacy)
-
-The original Docker/MQTT implementation has been archived to `archive/docker-mqtt/`.
-
-If you're currently using Docker/MQTT, the integration still works, but we recommend migrating to the native custom component for easier management.
-
-See [archive/docker-mqtt/README.md](archive/docker-mqtt/README.md) for migration instructions.
-
 ## 🛠️ Development
 
 ### Project Structure
@@ -126,7 +118,6 @@ ryde-waste-collection-homeassistant/
 ├── strings.json             # UI strings
 ├── translations/            # Translations
 ├── docs/                    # Documentation
-├── archive/                 # Archived Docker/MQTT files
 └── .github/                 # GitHub workflows
 ```
 
