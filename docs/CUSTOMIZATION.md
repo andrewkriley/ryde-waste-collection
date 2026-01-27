@@ -8,345 +8,186 @@ Make your waste collection icons change color automatically as collection day ap
 
 Icons will:
 - **Stay grey/blue** (default) when collection is more than 7 days away
-- **Turn to bin color** when collection is within 7 days (including today!)
+- **Turn to bin color** when collection is 7 days or fewer away (including today!)
 - Match actual Ryde Council bin colors: 🔴 Red (General), 🟡 Yellow (Recycling), 🟢 Green (Garden)
 
 This helps you quickly see which bins need attention soon!
 
 ---
 
-## Method 1: Mushroom Cards (Recommended)
+## Full Dashboard Example
 
-Mushroom cards are the easiest way to add dynamic colors. Install via HACS: **Frontend → Mushroom**
+This complete dashboard configuration uses Mushroom cards with dynamic colors. You'll need to install **Mushroom** from HACS (Frontend → Mushroom).
 
-### Individual Cards
+### For a New Dashboard
 
-```yaml
-type: custom:mushroom-entity-card
-entity: sensor.ryde_waste_collection_general_waste
-name: General Waste
-icon: mdi:trash-can
-icon_color: |-
-  {% set days = state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') %}
-  {% if days is not none and days <= 7 %}
-    red
-  {% else %}
-    grey
-  {% endif %}
-primary_info: name
-secondary_info: state
-```
+Copy and paste this entire configuration when creating a new dashboard:
 
 ```yaml
-type: custom:mushroom-entity-card
-entity: sensor.ryde_waste_collection_recycling
-name: Recycling
-icon: mdi:recycle
-icon_color: |-
-  {% set days = state_attr('sensor.ryde_waste_collection_recycling', 'days_until') %}
-  {% if days is not none and days <= 7 %}
-    yellow
-  {% else %}
-    grey
-  {% endif %}
-primary_info: name
-secondary_info: state
+title: Waste Collection
+views:
+  - title: Home
+    path: home
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Waste Collection
+            subtitle: Next 7 Days
+            
+          - type: custom:mushroom-entity-card
+            entity: sensor.ryde_waste_collection_general_waste
+            name: General Waste
+            icon: mdi:trash-can
+            icon_color: |-
+              {% set days = state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') %}
+              {% if days != none and days <= 7 %}
+                red
+              {% else %}
+                grey
+              {% endif %}
+            primary_info: name
+            secondary_info: state
+            badge_icon: |-
+              {% set days = state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') %}
+              {% if days != none and days <= 1 %}
+                mdi:alert
+              {% endif %}
+            badge_color: red
+            tap_action:
+              action: more-info
+            
+          - type: custom:mushroom-entity-card
+            entity: sensor.ryde_waste_collection_recycling
+            name: Recycling
+            icon: mdi:recycle
+            icon_color: |-
+              {% set days = state_attr('sensor.ryde_waste_collection_recycling', 'days_until') %}
+              {% if days != none and days <= 7 %}
+                yellow
+              {% else %}
+                grey
+              {% endif %}
+            primary_info: name
+            secondary_info: state
+            badge_icon: |-
+              {% set days = state_attr('sensor.ryde_waste_collection_recycling', 'days_until') %}
+              {% if days != none and days <= 1 %}
+                mdi:alert
+              {% endif %}
+            badge_color: yellow
+            tap_action:
+              action: more-info
+            
+          - type: custom:mushroom-entity-card
+            entity: sensor.ryde_waste_collection_garden_organics
+            name: Garden Organics
+            icon: mdi:leaf
+            icon_color: |-
+              {% set days = state_attr('sensor.ryde_waste_collection_garden_organics', 'days_until') %}
+              {% if days != none and days <= 7 %}
+                green
+              {% else %}
+                grey
+              {% endif %}
+            primary_info: name
+            secondary_info: state
+            badge_icon: |-
+              {% set days = state_attr('sensor.ryde_waste_collection_garden_organics', 'days_until') %}
+              {% if days != none and days <= 1 %}
+                mdi:alert
+              {% endif %}
+            badge_color: green
+            tap_action:
+              action: more-info
 ```
 
-```yaml
-type: custom:mushroom-entity-card
-entity: sensor.ryde_waste_collection_garden_organics
-name: Garden Organics
-icon: mdi:leaf
-icon_color: |-
-  {% set days = state_attr('sensor.ryde_waste_collection_garden_organics', 'days_until') %}
-  {% if days is not none and days <= 7 %}
-    green
-  {% else %}
-    grey
-  {% endif %}
-primary_info: name
-secondary_info: state
-```
+### For Adding to Existing Dashboard
 
-### Compact Chips (Horizontal Layout)
-
-```yaml
-type: custom:mushroom-chips-card
-alignment: center
-chips:
-  - type: template
-    entity: sensor.ryde_waste_collection_general_waste
-    icon: mdi:trash-can
-    icon_color: |-
-      {% set days = state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') %}
-      {% if days is not none and days <= 7 %}
-        red
-      {% else %}
-        grey
-      {% endif %}
-    content: |
-      {{ states('sensor.ryde_waste_collection_general_waste') }}
-    tap_action:
-      action: more-info
-      
-  - type: template
-    entity: sensor.ryde_waste_collection_recycling
-    icon: mdi:recycle
-    icon_color: |-
-      {% set days = state_attr('sensor.ryde_waste_collection_recycling', 'days_until') %}
-      {% if days is not none and days <= 7 %}
-        yellow
-      {% else %}
-        grey
-      {% endif %}
-    content: |
-      {{ states('sensor.ryde_waste_collection_recycling') }}
-    tap_action:
-      action: more-info
-      
-  - type: template
-    entity: sensor.ryde_waste_collection_garden_organics
-    icon: mdi:leaf
-    icon_color: |-
-      {% set days = state_attr('sensor.ryde_waste_collection_garden_organics', 'days_until') %}
-      {% if days is not none and days <= 7 %}
-        green
-      {% else %}
-        grey
-      {% endif %}
-    content: |
-      {{ states('sensor.ryde_waste_collection_garden_organics') }}
-    tap_action:
-      action: more-info
-```
-
----
-
-## Method 2: Custom Button Card
-
-Install via HACS: **Frontend → button-card**
-
-```yaml
-type: custom:button-card
-entity: sensor.ryde_waste_collection_general_waste
-name: General Waste
-icon: mdi:trash-can
-show_state: true
-show_last_changed: true
-styles:
-  icon:
-    - color: |
-        [[[
-          const days = entity.attributes.days_until;
-          if (days !== null && days !== undefined && days <= 7) return 'red';
-          return 'var(--primary-text-color)';
-        ]]]
-  card:
-    - padding: 10px
-```
-
-```yaml
-type: custom:button-card
-entity: sensor.ryde_waste_collection_recycling
-name: Recycling
-icon: mdi:recycle
-show_state: true
-show_last_changed: true
-styles:
-  icon:
-    - color: |
-        [[[
-          const days = entity.attributes.days_until;
-          if (days !== null && days !== undefined && days <= 7) return 'gold';
-          return 'var(--primary-text-color)';
-        ]]]
-  card:
-    - padding: 10px
-```
-
-```yaml
-type: custom:button-card
-entity: sensor.ryde_waste_collection_garden_organics
-name: Garden Organics
-icon: mdi:leaf
-show_state: true
-show_last_changed: true
-styles:
-  icon:
-    - color: |
-        [[[
-          const days = entity.attributes.days_until;
-          if (days !== null && days !== undefined && days <= 7) return 'green';
-          return 'var(--primary-text-color)';
-        ]]]
-  card:
-    - padding: 10px
-```
-
----
-
-## Method 3: Card-mod (Works with Standard Cards)
-
-Install via HACS: **Frontend → card-mod**
-
-```yaml
-type: entities
-entities:
-  - entity: sensor.ryde_waste_collection_general_waste
-    card_mod:
-      style: |
-        :host {
-          {% set days = state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') %}
-          --card-mod-icon-color: 
-            {% if days is not none and days <= 7 %}
-              red
-            {% else %}
-              var(--primary-text-color)
-            {% endif %};
-        }
-        
-  - entity: sensor.ryde_waste_collection_recycling
-    card_mod:
-      style: |
-        :host {
-          {% set days = state_attr('sensor.ryde_waste_collection_recycling', 'days_until') %}
-          --card-mod-icon-color: 
-            {% if days is not none and days <= 7 %}
-              gold
-            {% else %}
-              var(--primary-text-color)
-            {% endif %};
-        }
-        
-  - entity: sensor.ryde_waste_collection_garden_organics
-    card_mod:
-      style: |
-        :host {
-          {% set days = state_attr('sensor.ryde_waste_collection_garden_organics', 'days_until') %}
-          --card-mod-icon-color: 
-            {% if days is not none and days <= 7 %}
-              green
-            {% else %}
-              var(--primary-text-color)
-            {% endif %};
-        }
-```
-
----
-
-## Complete Dashboard Example
-
-Here's a complete vertical stack with dynamic colors using Mushroom cards:
-
-```yaml
-type: vertical-stack
-cards:
-  - type: custom:mushroom-title-card
-    title: Waste Collection
-    subtitle: Next 7 Days
-    
-  - type: custom:mushroom-entity-card
-    entity: sensor.ryde_waste_collection_general_waste
-    name: General Waste
-    icon: mdi:trash-can
-    icon_color: |-
-      {% set days = state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') %}
-      {% if days is not none and days <= 7 %}
-        red
-      {% else %}
-        grey
-      {% endif %}
-    primary_info: name
-    secondary_info: state
-    badge_icon: |-
-      {% set days = state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') %}
-      {% if days is not none and days <= 1 %}
-        mdi:alert
-      {% endif %}
-    badge_color: red
-    tap_action:
-      action: more-info
-    
-  - type: custom:mushroom-entity-card
-    entity: sensor.ryde_waste_collection_recycling
-    name: Recycling
-    icon: mdi:recycle
-    icon_color: |-
-      {% set days = state_attr('sensor.ryde_waste_collection_recycling', 'days_until') %}
-      {% if days is not none and days <= 7 %}
-        yellow
-      {% else %}
-        grey
-      {% endif %}
-    primary_info: name
-    secondary_info: state
-    badge_icon: |-
-      {% set days = state_attr('sensor.ryde_waste_collection_recycling', 'days_until') %}
-      {% if days is not none and days <= 1 %}
-        mdi:alert
-      {% endif %}
-    badge_color: yellow
-    tap_action:
-      action: more-info
-    
-  - type: custom:mushroom-entity-card
-    entity: sensor.ryde_waste_collection_garden_organics
-    name: Garden Organics
-    icon: mdi:leaf
-    icon_color: |-
-      {% set days = state_attr('sensor.ryde_waste_collection_garden_organics', 'days_until') %}
-      {% if days is not none and days <= 7 %}
-        green
-      {% else %}
-        grey
-      {% endif %}
-    primary_info: name
-    secondary_info: state
-    badge_icon: |-
-      {% set days = state_attr('sensor.ryde_waste_collection_garden_organics', 'days_until') %}
-      {% if days is not none and days <= 1 %}
-        mdi:alert
-      {% endif %}
-    badge_color: green
-    tap_action:
-      action: more-info
-```
+If you want to add just the cards to an existing dashboard, copy only the inner `vertical-stack` section (starting from `- type: vertical-stack`).
 
 ---
 
 ## Troubleshooting Grey Icons
 
-If all your icons are staying grey, check these:
+If all your icons are staying grey even when `days_until` is 0-7, try these steps:
 
-1. **Verify the attribute exists**: Go to Developer Tools → States, find your sensor, and check if `days_until` attribute is present
-2. **Check the value**: Make sure `days_until` is a number (0 for today, 1 for tomorrow, etc.)
-3. **Test the template**: Go to Developer Tools → Template and test:
-   ```jinja2
-   {% set days = state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') %}
-   Days until: {{ days }}
-   Should be colored: {{ days is not none and days <= 7 }}
-   ```
+### 1. Verify the Attribute Exists
+
+1. Go to **Developer Tools** → **States**
+2. Find `sensor.ryde_waste_collection_general_waste`
+3. Check if `days_until` attribute exists and has a numeric value
+
+### 2. Test the Template
+
+Go to **Developer Tools** → **Template** and test:
+
+```jinja2
+{% set days = state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') %}
+Days until: {{ days }}
+Type: {{ days.__class__.__name__ }}
+Is None: {{ days == none }}
+Should color: {{ days != none and days <= 7 }}
+```
+
+Expected output when `days_until = 0`:
+```
+Days until: 0
+Type: int
+Is None: False
+Should color: True
+```
+
+### 3. Alternative Template Syntax
+
+If the standard template isn't working, try this alternative:
+
+```yaml
+icon_color: |-
+  {% if state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') != none and state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') <= 7 %}
+    red
+  {% else %}
+    grey
+  {% endif %}
+```
+
+Or use numeric comparison without variable:
+
+```yaml
+icon_color: >-
+  {{ 'red' if (state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') or 999) <= 7 else 'grey' }}
+```
+
+### 4. Check Mushroom Version
+
+Make sure you have the latest version of Mushroom cards:
+1. Go to **HACS** → **Frontend**
+2. Find **Mushroom**
+3. Update if available
+4. Restart Home Assistant
+
+### 5. Clear Browser Cache
+
+Sometimes cached card configurations cause issues:
+1. Clear your browser cache
+2. Hard refresh (Ctrl+Shift+R or Cmd+Shift+R)
+3. Reopen the dashboard
 
 ---
 
 ## Customizing the Threshold
 
-Want to change when icons become colored? Just change the `7` to any number of days:
+Want to change when icons become colored? Adjust the number in the comparison:
 
+**3 days notice** (collection very soon):
 ```yaml
-{% set days = state_attr('sensor.ryde_waste_collection_general_waste', 'days_until') %}
-{% if days is not none and days <= 3 %}
-  red
-{% else %}
-  grey
-{% endif %}
+{% if days != none and days <= 3 %}
 ```
 
-Common thresholds:
-- **3 days**: Only color when very soon
-- **7 days**: Color when within a week (recommended)
-- **14 days**: Color when within two weeks
+**14 days notice** (two weeks ahead):
+```yaml
+{% if days != none and days <= 14 %}
+```
 
 ---
 
@@ -354,30 +195,25 @@ Common thresholds:
 
 Matching actual Ryde Council bin colors:
 
-| Waste Type | Icon Color | Default Color | Days Until |
-|------------|------------|---------------|------------|
-| General Waste | `red` | `grey` | ≤ 7 days |
-| Recycling | `yellow` | `grey` | ≤ 7 days |
-| Garden Organics | `green` | `grey` | ≤ 7 days |
+| Waste Type | When Colored | Icon Color | Otherwise |
+|------------|--------------|------------|-----------|
+| General Waste | 0-7 days | `red` | `grey` |
+| Recycling | 0-7 days | `yellow` | `grey` |
+| Garden Organics | 0-7 days | `green` | `grey` |
 
-**Note**: `days_until` of 0 means collection is **today** - it will be colored!
-
-**Bonus**: Add alert badges when collection is tomorrow or today!
+**Note**: `days_until = 0` means collection is **today** - it will show colored!
 
 ---
 
-## Installing Required Cards
-
-All these methods require custom cards from HACS:
+## Installing Mushroom Cards
 
 1. Open **HACS** in Home Assistant
 2. Go to **Frontend**
-3. Search and install:
-   - **Mushroom** (easiest, recommended)
-   - **button-card** (advanced styling)
-   - **card-mod** (works with standard cards)
-4. Restart Home Assistant
-5. Add the card configurations above
+3. Click **Explore & Download Repositories**
+4. Search for **Mushroom**
+5. Click **Download**
+6. Restart Home Assistant
+7. Use the dashboard configuration above
 
 ---
 
