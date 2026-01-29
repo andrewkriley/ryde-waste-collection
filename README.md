@@ -1,7 +1,7 @@
 # Ryde Waste Collection - Home Assistant Custom Integration
 
-[![GitHub Release](https://img.shields.io/github/release/andrewkriley/ryde-waste-collection-homeassistant.svg?style=flat-square)](https://github.com/andrewkriley/ryde-waste-collection-homeassistant/releases)
-[![License](https://img.shields.io/github/license/andrewkriley/ryde-waste-collection-homeassistant.svg?style=flat-square)](LICENSE)
+[![GitHub Release](https://img.shields.io/github/release/andrewkriley/ryde-waste-collection.svg?style=flat-square)](https://github.com/andrewkriley/ryde-waste-collection/releases)
+[![License](https://img.shields.io/github/license/andrewkriley/ryde-waste-collection.svg?style=flat-square)](LICENSE)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=flat-square)](https://github.com/custom-components/hacs)
 
 **Unofficial Home Assistant integration for tracking Ryde Council waste collection schedules.**
@@ -44,7 +44,7 @@ This is an **unofficial** integration created by Andrew Riley. It is **not affil
 
 1. Open HACS in Home Assistant
 2. Click the three dots menu (top right) → Custom repositories
-3. Add: `https://github.com/andrewkriley/ryde-waste-collection-homeassistant`
+3. Add: `https://github.com/andrewkriley/ryde-waste-collection`
 4. Category: Integration
 5. Click "Download" and restart Home Assistant
 
@@ -52,7 +52,7 @@ This is an **unofficial** integration created by Andrew Riley. It is **not affil
 
 ```bash
 cd /path/to/homeassistant/custom_components
-git clone https://github.com/andrewkriley/ryde-waste-collection-homeassistant.git ryde_waste_collection
+git clone https://github.com/andrewkriley/ryde-waste-collection.git ryde_waste_collection
 ```
 
 Restart Home Assistant after installation.
@@ -114,7 +114,7 @@ Check out [docs/DASHBOARD_SETUP.md](docs/DASHBOARD_SETUP.md) for:
 ### Project Structure
 
 ```
-ryde-waste-collection-homeassistant/
+ryde-waste-collection/
 ├── __init__.py              # Integration entry point
 ├── config_flow.py           # UI configuration
 ├── coordinator.py           # Data fetching
@@ -132,7 +132,7 @@ ryde-waste-collection-homeassistant/
 1. Clone the repository
 2. Create a symbolic link in your HA custom_components:
    ```bash
-   ln -s /path/to/ryde-waste-collection-homeassistant /path/to/homeassistant/custom_components/ryde_waste_collection
+   ln -s /path/to/ryde-waste-collection /path/to/homeassistant/custom_components/ryde_waste_collection
    ```
 3. Restart Home Assistant
 4. Configure via UI
@@ -155,8 +155,8 @@ MIT License - see [LICENSE](LICENSE) for details.
 - **Contributors**: All contributors and users
 ## 💬 Support
 
-- 🐛 [Report an Issue](https://github.com/andrewkriley/ryde-waste-collection-homeassistant/issues)
-- 💬 [Discussions](https://github.com/andrewkriley/ryde-waste-collection-homeassistant/discussions)
+- 🐛 [Report an Issue](https://github.com/andrewkriley/ryde-waste-collection/issues)
+- 💬 [Discussions](https://github.com/andrewkriley/ryde-waste-collection/discussions)
 - ⭐ Star this repo if you find it useful!
 
 ---
