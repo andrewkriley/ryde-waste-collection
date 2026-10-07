@@ -5,6 +5,7 @@ DOMAIN = "ryde_waste_collection"
 
 # Configuration
 CONF_ADDRESS = "address"
+CONF_GEOLOCATION_ID = "geolocation_id"
 CONF_SCAN_INTERVAL = "scan_interval"
 
 # Defaults

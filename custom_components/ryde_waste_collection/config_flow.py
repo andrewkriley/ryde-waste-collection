@@ -4,17 +4,24 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-import requests
 import voluptuous as vol
 
 from homeassistant import config_entries
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import homeassistant.helpers.config_validation as cv
 
+from .api import (
+    AddressMatch,
+    AddressNotFoundError,
+    CannotConnectError,
+    RydeApiError,
+    async_search_addresses,
+)
 from .const import (
-    API_SEARCH_URL,
     CONF_ADDRESS,
+    CONF_GEOLOCATION_ID,
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
@@ -29,74 +36,79 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 )
 
 
-async def validate_address(hass: HomeAssistant, address: str) -> dict[str, Any]:
-    """Validate the address by checking if it exists in Ryde Council's system.
-    
-    Address should be in the format: '129 Blaxland Road Ryde 2112'
-    Do not include NSW in the address.
-    """
-    params = {"keywords": address}
-
-    try:
-        response = await hass.async_add_executor_job(
-            lambda: requests.get(API_SEARCH_URL, params=params, timeout=10)
-        )
-        response.raise_for_status()
-        data = response.json()
-
-        if not data.get("Items") or len(data["Items"]) == 0:
-            raise ValueError("address_not_found")
-
-        # Return the normalized address
-        return {
-            "address": data["Items"][0]["AddressSingleLine"],
-            "geolocation_id": data["Items"][0]["Id"],
-        }
-
-    except requests.exceptions.RequestException as err:
-        _LOGGER.error("Error validating address: %s", err)
-        raise ValueError("cannot_connect") from err
-
-
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Ryde Waste Collection."""
 
     VERSION = 1
 
+    def __init__(self) -> None:
+        """Initialize the flow."""
+        self._matches: list[AddressMatch] = []
+
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Handle the initial step."""
+        """Handle the initial address search step."""
         errors: dict[str, str] = {}
 
         if user_input is not None:
+            session = async_get_clientsession(self.hass)
             try:
-                info = await validate_address(self.hass, user_input[CONF_ADDRESS])
-
-                # Set unique ID based on geolocation_id
-                await self.async_set_unique_id(info["geolocation_id"])
-                self._abort_if_unique_id_configured()
-
-                return self.async_create_entry(
-                    title=info["address"],
-                    data={CONF_ADDRESS: user_input[CONF_ADDRESS]},
+                self._matches = await async_search_addresses(
+                    session, user_input[CONF_ADDRESS]
                 )
-
-            except ValueError as err:
-                if str(err) == "address_not_found":
-                    errors["base"] = "address_not_found"
-                elif str(err) == "cannot_connect":
-                    errors["base"] = "cannot_connect"
-                else:
-                    errors["base"] = "unknown"
+            except AddressNotFoundError:
+                errors["base"] = "address_not_found"
+            except CannotConnectError:
+                errors["base"] = "cannot_connect"
+            except RydeApiError:
+                _LOGGER.exception("Unexpected Ryde API error")
+                errors["base"] = "unknown"
             except Exception:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
+            else:
+                if len(self._matches) == 1:
+                    return await self._async_create_from_match(self._matches[0])
+                return await self.async_step_select_address()
 
         return self.async_show_form(
             step_id="user",
             data_schema=STEP_USER_DATA_SCHEMA,
             errors=errors,
+        )
+
+    async def async_step_select_address(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Let the user pick the correct address when search is ambiguous."""
+        if user_input is not None:
+            selected_id = user_input[CONF_GEOLOCATION_ID]
+            for match in self._matches:
+                if match.geolocation_id == selected_id:
+                    return await self._async_create_from_match(match)
+            return self.async_abort(reason="unknown")
+
+        options = {
+            match.geolocation_id: match.address for match in self._matches
+        }
+        return self.async_show_form(
+            step_id="select_address",
+            data_schema=vol.Schema(
+                {vol.Required(CONF_GEOLOCATION_ID): vol.In(options)}
+            ),
+        )
+
+    async def _async_create_from_match(self, match: AddressMatch) -> FlowResult:
+        """Create a config entry for a confirmed address match."""
+        await self.async_set_unique_id(match.geolocation_id)
+        self._abort_if_unique_id_configured()
+        return self.async_create_entry(
+            title=match.address,
+            data={
+                CONF_ADDRESS: match.address,
+                CONF_GEOLOCATION_ID: match.geolocation_id,
+            },
         )
 
     @staticmethod
