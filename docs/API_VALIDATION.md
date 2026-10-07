@@ -36,13 +36,12 @@ The same markup is used for Garden Organics and Recycling.
 
 ## Request headers
 
-The council front-end is behind Akamai. Requests send:
+The council front-end is behind Akamai. Several common User-Agent values
+return HTTP 403, including Home Assistant's default session header and
+generic browser strings. The integration overrides those per request with:
 
-- `User-Agent: HomeAssistant/ryde_waste_collection`
+- `User-Agent: RydeWasteCollection/1.1.0 (+https://github.com/andrewkriley/ryde-waste-collection)`
 - `Accept: application/json`
-- `Referer: https://www.ryde.nsw.gov.au/`
-
-Chrome-like user agents have been observed returning HTTP 403.
 
 ## Parsing rules
 

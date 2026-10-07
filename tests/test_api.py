@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from ryde_waste_collection.api import (
+    API_HEADERS,
     calculate_days_until,
     extract_date,
     parse_address_matches,
@@ -19,6 +20,15 @@ from ryde_waste_collection.const import (
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
+
+
+def test_api_headers_override_home_assistant_user_agent() -> None:
+    """Council WAF blocks Home Assistant and generic browser user agents."""
+    user_agent = API_HEADERS["User-Agent"]
+    assert "Home Assistant" not in user_agent
+    assert "HomeAssistant" not in user_agent
+    assert "Mozilla" not in user_agent
+    assert API_HEADERS["Accept"] == "application/json"
 
 
 def test_extract_dates_from_council_html() -> None:

@@ -18,10 +18,16 @@ from .const import API_SEARCH_URL, API_WASTE_URL, WASTE_TYPES
 
 _LOGGER = logging.getLogger(__name__)
 
+# Akamai in front of ryde.nsw.gov.au returns 403 for several common
+# User-Agent strings, including Home Assistant's default session header
+# ("Home Assistant/...") and generic browser UAs. Per-request headers
+# override the shared HA session so we can send an allowed value.
 API_HEADERS = {
-    "User-Agent": "HomeAssistant/ryde_waste_collection",
+    "User-Agent": (
+        "RydeWasteCollection/1.1.0 "
+        "(+https://github.com/andrewkriley/ryde-waste-collection)"
+    ),
     "Accept": "application/json",
-    "Referer": "https://www.ryde.nsw.gov.au/",
 }
 REQUEST_TIMEOUT = ClientTimeout(total=10)
 
