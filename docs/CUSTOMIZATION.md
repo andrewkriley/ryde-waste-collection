@@ -266,7 +266,7 @@ This example uses a single card to dynamically present a summary for embedding w
 - ❌ **Template support** requires javascript
 
 ```yaml
-type: custom:bytton-card
+type: custom:button-card
 entity: sensor.ryde_waste_collection_general_waste
 icon: red #(supports templates for colour)
 show_state: true
