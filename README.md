@@ -47,7 +47,7 @@ Restart Home Assistant after copying.
 2. Click **+ Add Integration**
 3. Search for **Ryde Waste Collection**
 4. Enter a City of Ryde address, for example `128 Blaxland Road Ryde 2112` (do not include `NSW`)
-5. If more than one match is returned, choose the correct address
+5. Confirm the matched address, or choose the correct one if several are listed
 
 The integration is unofficial. Dates come from Ryde Council public APIs and should be confirmed on the [council website](https://www.ryde.nsw.gov.au/) if you need official information.
 

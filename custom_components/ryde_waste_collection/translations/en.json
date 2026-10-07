@@ -3,14 +3,14 @@
     "step": {
       "user": {
         "title": "Ryde Waste Collection",
-        "description": "Enter your address in the City of Ryde LGA to track waste collection schedules.\n\nFormat: '128 Blaxland Road Ryde 2112' (do not include NSW).\n\nIf several matches are found, you will be asked to choose the correct address.\n\nThis is an unofficial integration and is not affiliated with Ryde Council.",
+        "description": "Enter your address in the City of Ryde LGA to track waste collection schedules.\n\nFormat: '128 Blaxland Road Ryde 2112' (do not include NSW).\n\nYou will confirm the matched address on the next step.\n\nThis is an unofficial integration and is not affiliated with Ryde Council.",
         "data": {
           "address": "Address"
         }
       },
       "select_address": {
         "title": "Select address",
-        "description": "Multiple matches were found. Choose the correct Ryde LGA address.",
+        "description": "Confirm the address Ryde Council matched. If several are listed, choose the correct one.",
         "data": {
           "geolocation_id": "Address"
         }

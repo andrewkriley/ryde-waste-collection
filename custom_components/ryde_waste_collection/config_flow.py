@@ -68,8 +68,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
             else:
-                if len(self._matches) == 1:
-                    return await self._async_create_from_match(self._matches[0])
                 return await self.async_step_select_address()
 
         return self.async_show_form(
