@@ -1,0 +1,22 @@
+{
+  "Items": [
+    {
+      "Id": "id-286",
+      "AddressSingleLine": "286 Blaxland Road, Ryde 2112",
+      "Score": 8.689817
+    },
+    {
+      "Id": "id-128",
+      "AddressSingleLine": "128 Blaxland Road, Ryde 2112",
+      "Score": 8.689817
+    },
+    {
+      "Id": "id-150",
+      "AddressSingleLine": "150 Blaxland Road, Ryde 2112",
+      "Score": 8.689817
+    }
+  ],
+  "Offset": 0,
+  "Limit": 10,
+  "Total": 3
+}
