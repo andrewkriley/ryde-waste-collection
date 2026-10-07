@@ -98,7 +98,7 @@ ryde-waste-collection/
 │   ├── manifest.json
 │   ├── strings.json
 │   └── translations/
-├── brand/                   # HACS brand assets
+│   └── brand/               # HACS brand assets
 ├── tests/
 ├── docs/
 ├── hacs.json
@@ -123,7 +123,18 @@ pytest -q
 
 This repository is being prepared for a default HACS listing. Remaining owner steps after this branch lands:
 
-1. Set the GitHub repository description and topics (`home-assistant`, `hacs`, `integration`, `waste-collection`, `australia`)
+1. Set the GitHub repository description and topics. HACS Action fails without them:
+
+   ```bash
+   gh repo edit andrewkriley/ryde-waste-collection \
+     --description "Unofficial Home Assistant integration for City of Ryde waste collection schedules" \
+     --add-topic home-assistant \
+     --add-topic hacs \
+     --add-topic integration \
+     --add-topic waste-collection \
+     --add-topic australia
+   ```
+
 2. Confirm GitHub Actions (`hacs`, `hassfest`, `tests`) are green with no ignored checks
 3. Publish a GitHub Release whose tag matches `manifest.json` `version`
 4. Open a PR against [hacs/default](https://github.com/hacs/default) adding `andrewkriley/ryde-waste-collection` alphabetically to `./integration`
