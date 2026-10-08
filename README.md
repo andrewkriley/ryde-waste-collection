@@ -8,7 +8,7 @@ Unofficial Home Assistant integration for City of Ryde waste collection schedule
 
 Created by Andrew Riley. Not affiliated with or endorsed by the City of Ryde Council.
 
-Requires **Home Assistant 2026.3 or later** so the integration can ship its own brand icon. It is intended for current Home Assistant 2026.10 installs.
+Current release: **1.1.0**. Requires **Home Assistant 2026.3 or later** so the integration can ship its own brand icon. It is intended for current Home Assistant 2026.10 installs.
 
 ## Features
 
@@ -133,11 +133,11 @@ pytest -q
 
 ## HACS default-store status
 
-This repository is being prepared for a default HACS listing. Remaining owner steps after this branch lands:
+Release **1.1.0** is the version HACS should download (`manifest.json` `version` and the GitHub Release tag match).
 
-1. Confirm GitHub Actions (`hacs`, `hassfest`, `tests`) are green with no ignored checks
-2. Publish a GitHub Release whose tag matches `manifest.json` `version`
-3. Open a PR against [hacs/default](https://github.com/hacs/default) adding `andrewkriley/ryde-waste-collection` alphabetically to `./integration`
+Remaining owner step for the default store:
+
+1. Open a PR against [hacs/default](https://github.com/hacs/default) adding `andrewkriley/ryde-waste-collection` alphabetically to `./integration`
 
 ## License
 
