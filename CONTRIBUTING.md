@@ -32,12 +32,14 @@ pytest -q
 
 ## Local Home Assistant install
 
+Use Home Assistant 2026.3 or later (2026.10 is the current target). Link the integration directory, not the repository root:
+
 ```bash
 ln -s /path/to/ryde-waste-collection/custom_components/ryde_waste_collection \
   /path/to/homeassistant/custom_components/ryde_waste_collection
 ```
 
-Restart Home Assistant and add the integration from the UI.
+Restart Home Assistant and add the integration from the UI. The bins logo comes from `custom_components/ryde_waste_collection/brand/`.
 
 ## Code of conduct
 

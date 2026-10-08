@@ -1,106 +1,28 @@
-# Home Assistant Brands Submission Guide
+# Brand icons
 
-## Overview
-Your brand icons are ready to submit to the official Home Assistant Brands repository.
+Home Assistant 2026.3+ loads custom-integration icons from a `brand/` directory inside the integration. That is the official path. Do not open a pull request against [home-assistant/brands](https://github.com/home-assistant/brands) for this repository: new `custom_integrations/*` PRs are auto-closed.
 
-## Your Icon Details
-- **Domain**: `ryde_waste_collection`
-- **Icon Files Ready**: 
-- ✅ `icon.png` (256x256)
-    - ✅ `icon@2x.png` (512x512)
-    - ✅ `dark_icon.png` (256x256)
-    - ✅ `dark_icon@2x.png` (512x512)
+## Files that matter
 
-## Files Location
-All files are in: `brands_submission/ryde_waste_collection/`
+HACS validation and Home Assistant both read:
 
-## Submission Steps
-
-### 1. Fork the Brands Repository
-Go to: https://github.com/home-assistant/brands
-Click "Fork" in the top right
-
-### 2. Clone Your Fork
-```bash
-git clone https://github.com/YOUR_USERNAME/brands.git
-cd brands
+```
+custom_components/ryde_waste_collection/brand/icon.png
+custom_components/ryde_waste_collection/brand/icon@2x.png
+custom_components/ryde_waste_collection/brand/dark_icon.png
+custom_components/ryde_waste_collection/brand/dark_icon@2x.png
 ```
 
-### 3. Create Branch
-```bash
-git checkout -b add-ryde-waste-collection-icon
-```
+| File | Size |
+| --- | --- |
+| `icon.png` / `dark_icon.png` | 256×256 PNG |
+| `icon@2x.png` / `dark_icon@2x.png` | 512×512 PNG |
 
-### 4. Add Your Icons
-```bash
-# Copy your icons to the custom_integrations folder
-mkdir -p custom_integrations/ryde_waste_collection
-cp /home/andreril/ryde-waste-collection/brands_submission/ryde_waste_collection/*.png custom_integrations/ryde_waste_collection/
-```
+The same files are copied under `brand/` and `brands_submission/ryde_waste_collection/` for convenience. Keep `custom_components/ryde_waste_collection/brand/` as the source of truth.
 
-### 5. Verify Files
-```bash
-ls -lh custom_integrations/ryde_waste_collection/
-# Should show:
-# icon.png (256x256)
-# icon@2x.png (512x512)
-# dark_icon.png (256x256)
-# dark_icon@2x.png (512x512)
-```
+## Where the icon appears
 
-### 6. Commit and Push
-```bash
-git add custom_integrations/ryde_waste_collection/
-git commit -m "Add Ryde Waste Collection custom integration icons"
-git push origin add-ryde-waste-collection-icon
-```
+- **Settings → Devices & services** (Add Integration picker and the integration device page) on Home Assistant 2026.3+
+- Local API: `/api/brands/integration/ryde_waste_collection/icon.png`
 
-### 7. Create Pull Request
-1. Go to your fork on GitHub
-2. Click "Compare & pull request"
-3. Title: "Add Ryde Waste Collection custom integration icons"
-4. Description:
-   ```
-   Add icons for Ryde Waste Collection custom integration.
-   
-   Integration repository: https://github.com/andrewkriley/ryde-waste-collection
-   Domain: ryde_waste_collection
-   
-   Files included:
-   - icon.png (256x256)
-   - icon@2x.png (512x512)
-   - dark_icon.png (256x256)
-   - dark_icon@2x.png (512x512)
-   ```
-5. Submit the PR
-
-## Requirements Met ✅
-- ✅ Icon is exactly 256x256 pixels
-- ✅ Icon@2x is exactly 512x512 pixels
-- ✅ Dark icon is exactly 256x256 pixels
-- ✅ Dark icon@2x is exactly 512x512 pixels
-- ✅ All icons are PNG files
-- ✅ All icons are optimized
-- ✅ Domain matches integration manifest.json domain
-- ✅ Icons are in custom_integrations folder
-
-## After Approval
-Once your PR is merged, your icons will be available at:
-- `https://brands.home-assistant.io/ryde_waste_collection/icon.png`
-- `https://brands.home-assistant.io/ryde_waste_collection/icon@2x.png`
-- `https://brands.home-assistant.io/ryde_waste_collection/dark_icon.png`
-- `https://brands.home-assistant.io/ryde_waste_collection/dark_icon@2x.png`
-
-Home Assistant will automatically use the appropriate icon based on the user's theme!
-
-## Notes
-- The brands repository uses PNG images (not SVG)
-- Icon must be square (1:1 aspect ratio)
-- Standard size is 256x256, hDPI version is 512x512
-- Custom integrations go in `custom_integrations/` folder
-- Dark theme variants are optimized for dark mode display
-- If dark variants are missing, HA falls back to regular icons
-
-## Icon Details
-- **Regular icons**: Optimized for light themes
-- **Dark icons**: Slightly brightened (10%) for better visibility on dark backgrounds
+The HACS downloads panel still requests the public brands CDN in current HACS releases, so it can show “icon not available” even when the local files are present. See [hacs/integration#5223](https://github.com/hacs/integration/issues/5223).

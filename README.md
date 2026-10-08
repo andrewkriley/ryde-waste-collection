@@ -8,6 +8,8 @@ Unofficial Home Assistant integration for City of Ryde waste collection schedule
 
 Created by Andrew Riley. Not affiliated with or endorsed by the City of Ryde Council.
 
+Requires **Home Assistant 2026.3 or later** so the integration can ship its own brand icon. It is intended for current Home Assistant 2026.10 installs.
+
 ## Features
 
 - Next collection dates for general waste, recycling, and garden organics
@@ -26,6 +28,8 @@ This integration is not yet in the default HACS store. Add it as a custom reposi
 2. Repository: `https://github.com/andrewkriley/ryde-waste-collection`
 3. Category: **Integration**
 4. Download the integration and restart Home Assistant
+
+HACS will hide the download if the Home Assistant instance is older than 2026.3.0.
 
 ### Manual installation
 
@@ -50,6 +54,14 @@ Restart Home Assistant after copying.
 5. Confirm the matched address, or choose the correct one if several are listed
 
 The integration is unofficial. Dates come from Ryde Council public APIs and should be confirmed on the [council website](https://www.ryde.nsw.gov.au/) if you need official information.
+
+## Brand icon
+
+Home Assistant 2026.3+ serves icons from `custom_components/ryde_waste_collection/brand/`. After install, **Settings → Devices & services → Add Integration** and the integration device page show the Ryde Waste bins logo.
+
+The HACS downloads panel may still show “icon not available” until HACS uses the local brands API ([hacs/integration#5223](https://github.com/hacs/integration/issues/5223)). That is a HACS frontend issue, not a missing file in this repository.
+
+Do not open a `home-assistant/brands` PR for this custom integration. That repository now auto-closes `custom_integrations/*` submissions and points authors at the local `brand/` directory.
 
 ## Sensor entities
 
@@ -123,21 +135,9 @@ pytest -q
 
 This repository is being prepared for a default HACS listing. Remaining owner steps after this branch lands:
 
-1. Set the GitHub repository description and topics. HACS Action fails without them:
-
-   ```bash
-   gh repo edit andrewkriley/ryde-waste-collection \
-     --description "Unofficial Home Assistant integration for City of Ryde waste collection schedules" \
-     --add-topic home-assistant \
-     --add-topic hacs \
-     --add-topic integration \
-     --add-topic waste-collection \
-     --add-topic australia
-   ```
-
-2. Confirm GitHub Actions (`hacs`, `hassfest`, `tests`) are green with no ignored checks
-3. Publish a GitHub Release whose tag matches `manifest.json` `version`
-4. Open a PR against [hacs/default](https://github.com/hacs/default) adding `andrewkriley/ryde-waste-collection` alphabetically to `./integration`
+1. Confirm GitHub Actions (`hacs`, `hassfest`, `tests`) are green with no ignored checks
+2. Publish a GitHub Release whose tag matches `manifest.json` `version`
+3. Open a PR against [hacs/default](https://github.com/hacs/default) adding `andrewkriley/ryde-waste-collection` alphabetically to `./integration`
 
 ## License
 
