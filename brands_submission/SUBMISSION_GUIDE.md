@@ -6,10 +6,10 @@ Your brand icons are ready to submit to the official Home Assistant Brands repos
 ## Your Icon Details
 - **Domain**: `ryde_waste_collection`
 - **Icon Files Ready**: 
-  - ✅ `icon.png` (256x256) - 65KB
-  - ✅ `icon@2x.png` (512x512) - 200KB
-  - ✅ `dark_icon.png` (256x256) - 61KB
-  - ✅ `dark_icon@2x.png` (512x512) - 212KB
+- ✅ `icon.png` (256x256)
+    - ✅ `icon@2x.png` (512x512)
+    - ✅ `dark_icon.png` (256x256)
+    - ✅ `dark_icon@2x.png` (512x512)
 
 ## Files Location
 All files are in: `brands_submission/ryde_waste_collection/`
