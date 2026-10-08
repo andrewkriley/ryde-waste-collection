@@ -6,7 +6,10 @@ import logging
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.update_coordinator import (
+    TimestampDataUpdateCoordinator,
+    UpdateFailed,
+)
 from homeassistant.util import dt as dt_util
 
 from .api import (
@@ -22,7 +25,9 @@ from .const import DEFAULT_SCAN_INTERVAL, DOMAIN
 _LOGGER = logging.getLogger(__name__)
 
 
-class RydeWasteCollectionCoordinator(DataUpdateCoordinator[dict[str, WasteCollection]]):
+class RydeWasteCollectionCoordinator(
+    TimestampDataUpdateCoordinator[dict[str, WasteCollection]]
+):
     """Class to manage fetching Ryde waste collection data."""
 
     def __init__(
