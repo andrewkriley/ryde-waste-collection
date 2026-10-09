@@ -4,7 +4,7 @@
   <img src="https://github.com/andrewkriley/ryde-waste-collection/raw/main/brand/icon.png" alt="Ryde Waste Collection" width="160" height="160">
 </p>
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=flat-square)](https://github.com/hacs/integration)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=flat-square)](https://github.com/hacs/integration)
 [![License](https://img.shields.io/github/license/andrewkriley/ryde-waste-collection.svg?style=flat-square)](LICENSE)
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=andrewkriley&repository=ryde-waste-collection&category=integration)
 
@@ -24,16 +24,27 @@ Current release: **1.1.0**. Requires **Home Assistant 2026.3 or later** so the i
 
 ## Installation
 
-### HACS custom repository (recommended)
+### HACS default store (recommended)
 
-This integration is not yet in the default HACS store. Add it as a custom repository:
+Install the published **1.1.0** release from HACS:
 
-1. [Open the repository in HACS](https://my.home-assistant.io/redirect/hacs_repository/?owner=andrewkriley&repository=ryde-waste-collection&category=integration), or in HACS go to **⋯ → Custom repositories**
-2. Repository: `https://github.com/andrewkriley/ryde-waste-collection`
-3. Category: **Integration**
-4. Download the integration and restart Home Assistant
+1. Open **HACS** in Home Assistant
+2. Search for **Ryde Waste Collection**
+3. Download the integration and restart Home Assistant
 
 HACS will hide the download if the Home Assistant instance is older than 2026.3.0.
+
+The default-store listing is in review ([hacs/default#11716](https://github.com/hacs/default/pull/11716)). Until that PR merges, use the custom-repository steps below.
+
+### Custom repository (optional, for testing branches)
+
+Use this only to try a branch that is not the published release, for example a pull-request branch.
+
+1. In HACS go to **⋯ → Custom repositories**, or [open this repository in HACS](https://my.home-assistant.io/redirect/hacs_repository/?owner=andrewkriley&repository=ryde-waste-collection&category=integration)
+2. Repository: `https://github.com/andrewkriley/ryde-waste-collection`
+3. Category: **Integration**
+4. Open **Ryde Waste Collection** in HACS and download the branch or version you want to test
+5. Restart Home Assistant
 
 ### Manual installation
 
@@ -139,9 +150,7 @@ pytest -q
 
 Release **1.1.0** is the version HACS should download (`manifest.json` `version` and the GitHub Release tag match).
 
-Remaining owner step for the default store:
-
-1. Open a PR against [hacs/default](https://github.com/hacs/default) adding `andrewkriley/ryde-waste-collection` alphabetically to `./integration`
+The default-store addition is open as [hacs/default#11716](https://github.com/hacs/default/pull/11716). After that PR merges, the integration appears in HACS search on the next store scan. Until then, add it as a custom repository.
 
 ## License
 
