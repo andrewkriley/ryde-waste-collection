@@ -4,11 +4,10 @@
   "codeowners": ["@andrewkriley"],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/andrewkriley/ryde-waste-collection/blob/main/README.md",
+  "documentation": "https://github.com/andrewkriley/ryde-waste-collection",
   "integration_type": "service",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/andrewkriley/ryde-waste-collection/issues",
-  "logo": "https://github.com/andrewkriley/ryde-waste-collection/raw/main/custom_components/ryde_waste_collection/icons/icon.png",
   "requirements": [],
-  "version": "1.0.0"
+  "version": "1.1.0"
 }

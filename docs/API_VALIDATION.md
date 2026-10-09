@@ -1,175 +1,58 @@
-# Ryde Council Waste Collection - API Documentation
+# Ryde Council waste collection APIs
 
-This project uses Ryde Council's public APIs to retrieve waste collection schedules. This approach replaced the previous Selenium-based screen scraping method for improved reliability and performance.
+This integration uses two public City of Ryde endpoints. It is unofficial and will break if the council changes those APIs or the HTML they return.
 
+Implementation lives in `custom_components/ryde_waste_collection/api.py`.
 
-This implementation was inspired by [mampfes/hacs_waste_collection_schedule](https://github.com/mampfes/hacs_waste_collection_schedule/blob/master/doc/source/ryde_nsw_gov_au.md) Ryde Council integration.
+## Endpoints
 
-Two API calls are required to retrieve waste collection schedule results from Ryde Council:
+### Address search
 
-1. **Address Search API** at `https://www.ryde.nsw.gov.au/api/v1/myarea/search`
-2. **Waste Services API** at `https://www.ryde.nsw.gov.au/ocapi/Public/myarea/wasteservices`
+`GET https://www.ryde.nsw.gov.au/api/v1/myarea/search?keywords=128+Blaxland+Road+Ryde+2112`
 
-### Process Flow
+Returns ranked matches. The first result is not always the street address the user typed (for example a unit in a large complex may rank first). Setup therefore shows a picker when more than one match is returned, and stores the chosen `Id` as `geolocation_id`.
 
-The integration performs the following steps:
+### Waste services
 
-1. **Address Search**: Calls the address search API to retrieve the "location ID" for the given address
-   - Example: `https://www.ryde.nsw.gov.au/api/v1/myarea/search?keywords=504+Victoria+Road%2C+Ryde`
-   - Returns a `geolocationid` (e.g., `619ef4ca-45e2-4866-a55b-165e6d563943`)
+`GET https://www.ryde.nsw.gov.au/ocapi/Public/myarea/wasteservices?geolocationid=<id>&ocsvclang=en-AU`
 
-2. **Waste Schedule Retrieval**: Uses the location ID from step 1 to query the waste services API
-   - Example: `https://www.ryde.nsw.gov.au/ocapi/Public/myarea/wasteservices?geolocationid=619ef4ca-45e2-4866-a55b-165e6d563943&ocsvclang=en-AU`
-   - Returns HTML content with collection dates
+JSON body:
 
-3. **Data Parsing**: Extracts waste collection dates from the HTML response
-   - Parses dates for General Waste, Recycling, and Garden Organics
-   - Converts dates to Home Assistant sensor format
-
-### Technical Implementation
-
-The integration maintains this API approach for reliability and performance. If Ryde Council's APIs change in the future, the integration may need updates.
-## API Endpoints
-
-### 1. Address Search API
-**Endpoint:** `https://www.ryde.nsw.gov.au/api/v1/myarea/search`
-
-**Method:** GET
-
-**Parameters:**
-- `keywords` (string): The address to search for
-
-**Example Request:**
-```
-https://www.ryde.nsw.gov.au/api/v1/myarea/search?keywords=129+Blaxland+Road%2C+Ryde
-```
-
-**Response Format:**
-```json
-{
-  "Items": [
-    {
-      "Id": "b148f7d7-e435-4b28-8970-b89af8be2ba0",
-      "AddressSingleLine": "1028/109-129 Blaxland Road, Ryde 2112",
-      "MunicipalSubdivision": null,
-      "Distance": 0,
-      "Score": 15.635677,
-      "LatLon": null
-    }
-  ],
-  "Offset": 0,
-  "Limit": 10,
-  "Total": 1
-}
-```
-
-**Notes:**
-- Returns multiple potential matches ranked by Score
-- First result (highest score) is typically the correct match
-- `Id` field is required for the waste services API
-
-### 2. Waste Services API
-**Endpoint:** `https://www.ryde.nsw.gov.au/ocapi/Public/myarea/wasteservices`
-
-**Method:** GET
-
-**Parameters:**
-- `geolocationid` (string): The ID from the address search API
-- `ocsvclang` (string): Language parameter (use "en-AU")
-
-**Example Request:**
-```
-https://www.ryde.nsw.gov.au/ocapi/Public/myarea/wasteservices?geolocationid=b148f7d7-e435-4b28-8970-b89af8be2ba0&ocsvclang=en-AU
-```
-
-**Response Format:**
 ```json
 {
   "success": true,
-  "responseContent": "<div>...HTML content with waste collection dates...</div>"
+  "responseContent": "<div>...HTML with next-service dates...</div>"
 }
 ```
 
-**Notes:**
-- Response contains HTML that needs to be parsed
-- HTML includes dates for General Waste, Garden Organics, and Recycling
-- Date format: "Day DD/M/YYYY" (e.g., "Tue 27/1/2026")
+Dates are extracted from:
 
-## Advantages Over Screen Scraping
-
-1. **More Reliable:** API endpoints are less likely to break with website redesigns
-2. **Cleaner Data:** JSON response format is easier to parse than HTML
-3. **Better Performance:** Direct API calls are faster than browser automation
-4. **No Browser Dependencies:** Eliminates need for Selenium and Chrome/Chromium
-5. **Official Support:** Using public APIs that Ryde Council's website uses internally
-6. **Structured Data:** Address search returns normalized address data with geolocation IDs
-
-## Implementation
-
-### Python Example
-The `ryde_waste_scraper.py` script provides a complete implementation:
-
-```python
-from ryde_waste_scraper import get_waste_collection_info
-
-waste_info = get_waste_collection_info("129 Blaxland Road, Ryde")
-print(waste_info)
-# Output: {'General Waste': 'Tue 27/1/2026', 'Garden Organics': 'Tue 27/1/2026', 'Recycling': 'Tue 3/2/2026'}
+```html
+<h3>General Waste</h3>
+<div class="next-service">Tue 25/8/2026</div>
 ```
 
-### Dependencies
-- `requests` library for HTTP requests
-- Standard library modules: `json`, `re`, `html`, `sys`, `argparse`
+The same markup is used for Garden Organics and Recycling.
 
-### Parsing Logic
-The waste services API returns HTML content that must be parsed:
-```python
-import re
-from html import unescape
+## Request headers
 
-html_content = unescape(response_content)
-general_waste = re.search(
-    r'<h3>General Waste</h3>.*?<div class="next-service">\s*(.+?)\s*</div>',
-    html_content,
-    re.DOTALL
-).group(1).strip()
-```
+The council front-end is behind Akamai. Several common User-Agent values
+return HTTP 403, including Home Assistant's default session header and
+generic browser strings. The integration overrides those per request with:
 
-## Command-Line Usage
+- `User-Agent: RydeWasteCollection/1.1.0 (+https://github.com/andrewkriley/ryde-waste-collection)`
+- `Accept: application/json`
 
-### Basic Usage
-```bash
-python3 ryde_waste_scraper.py "129 Blaxland Road, Ryde"
-```
+## Parsing rules
 
-### JSON Output
-```bash
-python3 ryde_waste_scraper.py "129 Blaxland Road, Ryde" --json
-```
+- Input date text looks like `Tue 25/8/2026`
+- `days_until` is calculated in the Home Assistant timezone
+- If the date cannot be parsed, `days_until` is omitted (`None`) instead of `0`
 
-## API Validation
+## Tests
 
-To validate the API implementation, run:
+Parser fixtures are in `tests/fixtures/`. Run:
 
 ```bash
-python3 api_validation.py
+pytest -q
 ```
-
-This tests the address search and waste schedule retrieval to ensure the APIs are working correctly.
-
-## Integration with Home Assistant
-
-
-## Error Handling
-
-The implementation includes robust error handling for:
-- Network timeouts and connection errors
-- Invalid addresses (no search results)
-- API response parsing errors
-- Missing or malformed data
-
-All errors are logged to stderr for easy debugging.
-
-## Migration Notes
-
-The API-based approach maintains the same `get_waste_collection_info(address)` function interface as the previous Selenium-based scraper.
