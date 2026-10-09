@@ -1,5 +1,9 @@
 # Ryde Waste Collection
 
+<p align="center">
+  <img src="https://github.com/andrewkriley/ryde-waste-collection/raw/main/brand/icon.png" alt="Ryde Waste Collection" width="160" height="160">
+</p>
+
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=flat-square)](https://github.com/hacs/integration)
 [![License](https://img.shields.io/github/license/andrewkriley/ryde-waste-collection.svg?style=flat-square)](LICENSE)
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=andrewkriley&repository=ryde-waste-collection&category=integration)
