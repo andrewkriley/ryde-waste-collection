@@ -30,11 +30,11 @@ Requires **Home Assistant 2026.3 or later**. Current release: **1.1.0**.
 2. Search for **Ryde Waste Collection**
 3. Download the integration and restart Home Assistant
 
-If it does not appear in search yet, add it as a custom repository (below) until the [default-store listing](https://github.com/hacs/default/pull/11716) is merged.
+HACS hides the download if the Home Assistant instance is older than 2026.3.0.
 
 ### Custom repository (optional)
 
-Use this to install before the default-store listing is live, or to test a branch that is not the published release.
+Use this to test a branch that is not the published release.
 
 1. In HACS go to **⋯ → Custom repositories**, or [open this repository in HACS](https://my.home-assistant.io/redirect/hacs_repository/?owner=andrewkriley&repository=ryde-waste-collection&category=integration)
 2. Repository: `https://github.com/andrewkriley/ryde-waste-collection`
