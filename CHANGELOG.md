@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.1
+
+Consumer README for the live HACS default-store listing.
+
+- HACS search is the recommended install path
+- Custom repository install is only for testing a branch that is not the published release
+- User-Agent reports `RydeWasteCollection/1.1.1`
+
 ## 1.1.0
 
 First HACS-ready release. Requires Home Assistant 2026.3 or later.

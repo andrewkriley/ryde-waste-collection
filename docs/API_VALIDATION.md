@@ -40,7 +40,7 @@ The council front-end is behind Akamai. Several common User-Agent values
 return HTTP 403, including Home Assistant's default session header and
 generic browser strings. The integration overrides those per request with:
 
-- `User-Agent: RydeWasteCollection/1.1.0 (+https://github.com/andrewkriley/ryde-waste-collection)`
+- `User-Agent: RydeWasteCollection/1.1.1 (+https://github.com/andrewkriley/ryde-waste-collection)`
 - `Accept: application/json`
 
 ## Parsing rules
