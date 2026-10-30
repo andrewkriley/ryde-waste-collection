@@ -12,7 +12,7 @@ Unofficial Home Assistant integration for City of Ryde waste collection schedule
 
 Created by Andrew Riley. Not affiliated with or endorsed by the City of Ryde Council.
 
-Requires **Home Assistant 2026.3 or later**. Current release: **1.1.0**.
+Requires **Home Assistant 2026.3 or later**. Current release: **1.1.1**.
 
 ## Features
 
