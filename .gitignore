@@ -50,3 +50,5 @@ Thumbs.db
 waste_collection.jpg
 
 .venv/
+
+.venv-ha/

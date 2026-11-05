@@ -44,3 +44,27 @@ Restart Home Assistant and add the integration from the UI. The bins logo comes 
 ## Code of conduct
 
 Be respectful and constructive.
+
+
+### Running regression tests
+
+The API tests do not require Home Assistant:
+
+```sh
+python -m pip install pytest aiohttp
+python -m pytest -q --ignore=tests/ha
+```
+
+Run the lifecycle tests in a separate Python 3.14 environment:
+
+```sh
+python -m pip install -r requirements-test-ha.txt
+python -m pytest tests/ha -q --asyncio-mode=auto
+```
+
+The pinned test helper includes Home Assistant 2026.10.4. These tests load real
+config entries, sensors, coordinators and timers, replacing only council network
+calls. They verify Sydney midnight day-count updates, successful unload cleanup
+(including the options listener), retained operation when platform unload fails,
+and setup after unload without duplicate midnight refreshes. Frozen time avoids
+waiting for real midnight. Both suites run in CI.
