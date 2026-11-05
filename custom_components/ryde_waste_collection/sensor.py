@@ -111,4 +111,9 @@ class RydeWasteCollectionSensor(CoordinatorEntity[RydeWasteCollectionCoordinator
     @property
     def available(self) -> bool:
         """Return if entity is available."""
-        return self.coordinator.last_update_success and self._waste_data() is not None
+        data = self._waste_data()
+        return (
+            self.coordinator.last_update_success
+            and data is not None
+            and data.collection_date is not None
+        )

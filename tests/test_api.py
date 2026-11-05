@@ -114,3 +114,22 @@ def test_date_rollover_calculation() -> None:
     assert calculate_days_until(collection, date(2026, 8, 24)) == 1
     assert calculate_days_until(collection, date(2026, 8, 25)) == 0
     assert calculate_days_until(collection, date(2026, 8, 26)) == -1
+
+
+def test_missing_service_does_not_take_next_bins_date():
+    html = '<h3>General Waste</h3><h3>Recycling</h3><div class="next-service">Tue 1/9/2026</div>'
+    assert extract_date(html, WASTE_TYPE_GENERAL) is None
+    assert extract_date(html, WASTE_TYPE_RECYCLING) == "Tue 1/9/2026"
+
+
+def test_nested_markup_and_exact_class_tokens():
+    html = """<H3><span>General Waste</span></H3>
+    <div class='not-next-service'>wrong</div>
+    <div class = 'card next-service'><span>Tue 25/8/2026</span></div>"""
+    assert extract_date(html, WASTE_TYPE_GENERAL) == "Tue 25/8/2026"
+
+
+def test_search_skips_bad_items_and_tolerates_invalid_score():
+    matches = parse_address_matches({"Items": [None, "bad", {"Id": "id", "AddressSingleLine": "address", "Score": "unknown"}]})
+    assert len(matches) == 1
+    assert matches[0].score is None

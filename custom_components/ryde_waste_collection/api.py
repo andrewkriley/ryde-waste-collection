@@ -8,6 +8,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date, datetime
 from html import unescape
+from html.parser import HTMLParser
 import logging
 import re
 from typing import Any
@@ -65,16 +66,58 @@ class WasteCollection:
     days_until: int | None
 
 
+class _ScheduleParser(HTMLParser):
+    """Read heading and service text without crossing into another bin section."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.dates: dict[str, str] = {}
+        self.heading: list[str] | None = None
+        self.waste_type: str | None = None
+        self.service: list[str] | None = None
+        self.depth = 0
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag == "h3":
+            self.heading = []
+            self.waste_type = None
+            self.service = None
+            self.depth = 0
+        if self.service is not None and tag == "div":
+            self.depth += 1
+        elif tag == "div" and self.waste_type:
+            classes = (dict(attrs).get("class") or "").split()
+            if "next-service" in classes:
+                self.service = []
+                self.depth = 1
+
+    def handle_data(self, data: str) -> None:
+        if self.heading is not None:
+            self.heading.append(data)
+        if self.service is not None:
+            self.service.append(data)
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "h3" and self.heading is not None:
+            heading = " ".join("".join(self.heading).split()).casefold()
+            self.waste_type = next(
+                (kind for kind in WASTE_TYPES if kind.casefold() == heading), None
+            )
+            self.heading = None
+        if tag == "div" and self.service is not None:
+            self.depth -= 1
+            if self.depth == 0:
+                text = " ".join("".join(self.service).split())
+                if text and self.waste_type:
+                    self.dates.setdefault(self.waste_type, text)
+                self.service = None
+
+
 def extract_date(html_content: str, waste_type: str) -> str | None:
-    """Extract the next-service date text for a waste type from council HTML."""
-    pattern = (
-        rf"<h3\b[^>]*>\s*{re.escape(waste_type)}\s*</h3>.*?"
-        r'<div\b[^>]*class=["\'][^"\']*\bnext-service\b[^"\']*["\'][^>]*>\s*(.+?)\s*</div>'
-    )
-    match = re.search(pattern, html_content, re.DOTALL | re.IGNORECASE)
-    if match:
-        return match.group(1).strip()
-    return None
+    """Extract visible next-service text for exactly one waste heading."""
+    parser = _ScheduleParser()
+    parser.feed(html_content)
+    return parser.dates.get(waste_type)
 
 
 def parse_collection_date(date_str: str) -> date | None:
@@ -115,18 +158,26 @@ def parse_waste_schedule(html_content: str, today: date) -> dict[str, WasteColle
 
 def parse_address_matches(payload: dict[str, Any]) -> list[AddressMatch]:
     """Convert an address-search JSON payload into match objects."""
+    if not isinstance(payload, dict) or not isinstance(payload.get("Items"), list):
+        raise RydeApiError("Invalid address search response")
     matches: list[AddressMatch] = []
-    for item in payload.get("Items") or []:
+    for item in payload["Items"]:
+        if not isinstance(item, dict):
+            continue
         geolocation_id = item.get("Id")
         address = item.get("AddressSingleLine")
         if not geolocation_id or not address:
             continue
         score = item.get("Score")
+        try:
+            score = float(score) if score is not None else None
+        except (TypeError, ValueError):
+            score = None
         matches.append(
             AddressMatch(
                 geolocation_id=str(geolocation_id),
                 address=str(address),
-                score=float(score) if score is not None else None,
+                score=score,
             )
         )
     return matches
@@ -172,10 +223,15 @@ async def async_fetch_waste_schedule(
     except (ClientError, TimeoutError, ValueError) as err:
         raise CannotConnectError(str(err)) from err
 
-    if not payload.get("success"):
+    if not isinstance(payload, dict):
+        raise RydeApiError("Invalid waste schedule response")
+    if payload.get("success") is not True:
         raise RydeApiError("API returned success=false")
 
-    html_content = unescape(payload.get("responseContent") or "")
+    content = payload.get("responseContent")
+    if not isinstance(content, str):
+        raise RydeApiError("Invalid waste schedule HTML")
+    html_content = unescape(content)
     schedule = parse_waste_schedule(html_content, today)
     if not any(item.collection_date is not None for item in schedule.values()):
         raise RydeApiError("Council response contained no valid collection dates")
