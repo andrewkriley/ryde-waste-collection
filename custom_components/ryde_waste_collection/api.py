@@ -25,7 +25,7 @@ _LOGGER = logging.getLogger(__name__)
 # override the shared HA session so we can send an allowed value.
 API_HEADERS = {
     "User-Agent": (
-        "RydeWasteCollection/1.1.1 "
+        "RydeWasteCollection/1.1.2 "
         "(+https://github.com/andrewkriley/ryde-waste-collection)"
     ),
     "Accept": "application/json",

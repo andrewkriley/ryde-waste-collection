@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.1.2
+
+Patch release for collection schedule reliability; no new public features or breaking changes.
+
+- Refresh collection countdowns at local midnight
+- Parse nested council HTML without assigning another bin's collection date
+- Reject malformed or empty API responses; mark bins without valid dates unavailable
+- Expand API and Home Assistant lifecycle regression tests
+- Harden CI permissions, action revisions and dependency audits
+- Validate live council address search and all three bin dates
+- Keep the manifest and API User-Agent at `1.1.2`
+
 ## 1.1.1
 
 Consumer README for the live HACS default-store listing.
