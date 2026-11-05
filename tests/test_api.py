@@ -95,3 +95,22 @@ def test_parse_multiple_address_matches_preserves_all() -> None:
 def test_parse_address_matches_skips_incomplete_items() -> None:
     matches = parse_address_matches({"Items": [{"Id": "only-id"}, {"AddressSingleLine": "no-id"}]})
     assert matches == []
+
+
+def test_extract_date_with_extra_classes_and_whitespace() -> None:
+    html = '<h3 class="heading"> General Waste </h3><div class="card next-service active">Tue 25/8/2026</div>'
+    assert extract_date(html, WASTE_TYPE_GENERAL) == "Tue 25/8/2026"
+
+
+def test_invalid_and_missing_collection_dates() -> None:
+    html = '<h3>General Waste</h3><div class="next-service">not a date</div>'
+    schedule = parse_waste_schedule(html, date(2026, 8, 24))
+    assert schedule[WASTE_TYPE_GENERAL].days_until is None
+    assert schedule[WASTE_TYPE_RECYCLING].collection_date is None
+
+
+def test_date_rollover_calculation() -> None:
+    collection = date(2026, 8, 25)
+    assert calculate_days_until(collection, date(2026, 8, 24)) == 1
+    assert calculate_days_until(collection, date(2026, 8, 25)) == 0
+    assert calculate_days_until(collection, date(2026, 8, 26)) == -1

@@ -68,10 +68,10 @@ class WasteCollection:
 def extract_date(html_content: str, waste_type: str) -> str | None:
     """Extract the next-service date text for a waste type from council HTML."""
     pattern = (
-        rf"<h3>{re.escape(waste_type)}</h3>.*?"
-        r'<div class="next-service">\s*(.+?)\s*</div>'
+        rf"<h3\b[^>]*>\s*{re.escape(waste_type)}\s*</h3>.*?"
+        r'<div\b[^>]*class=["\'][^"\']*\bnext-service\b[^"\']*["\'][^>]*>\s*(.+?)\s*</div>'
     )
-    match = re.search(pattern, html_content, re.DOTALL)
+    match = re.search(pattern, html_content, re.DOTALL | re.IGNORECASE)
     if match:
         return match.group(1).strip()
     return None
@@ -176,4 +176,7 @@ async def async_fetch_waste_schedule(
         raise RydeApiError("API returned success=false")
 
     html_content = unescape(payload.get("responseContent") or "")
-    return parse_waste_schedule(html_content, today)
+    schedule = parse_waste_schedule(html_content, today)
+    if not any(item.collection_date is not None for item in schedule.values()):
+        raise RydeApiError("Council response contained no valid collection dates")
+    return schedule

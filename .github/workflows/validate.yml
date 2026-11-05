@@ -38,3 +38,10 @@ jobs:
         run: pip install pytest aiohttp
       - name: Run tests
         run: pytest -q
+      - name: Check Python syntax
+        run: python -m compileall -q custom_components tests
+      - name: Dependency vulnerability audit
+        run: |
+          pip install pip-audit
+          pip-audit --no-deps --disable-pip --requirement <(pip freeze | grep -E "^(aiohttp|pytest)==")
+        shell: bash

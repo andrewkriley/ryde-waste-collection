@@ -6,7 +6,8 @@ import logging
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.event import async_track_time_change
 
 from .const import (
     CONF_ADDRESS,
@@ -47,6 +48,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(async_update_options))
+
+    @callback
+    def _refresh_at_midnight(_now) -> None:
+        """Recalculate days_until at the start of each local day."""
+        hass.async_create_task(coordinator.async_request_refresh())
+
+    entry.async_on_unload(
+        async_track_time_change(hass, _refresh_at_midnight, hour=0, minute=0, second=0)
+    )
 
     return True
 
